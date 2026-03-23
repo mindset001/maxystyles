@@ -21,9 +21,23 @@ import gradeRoutes from './routes/grades';
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Build allowed origins list — strip trailing slashes to avoid mismatch
+const rawOrigins = [
+  process.env.FRONTEND_URL || 'http://localhost:3000',
+  'http://localhost:3000',
+];
+if (process.env.VERCEL_URL) rawOrigins.push(`https://${process.env.VERCEL_URL}`);
+const allowedOrigins = [...new Set(rawOrigins.map((o) => o.replace(/\/+$/, '')))];
+
 // Security middleware — CORS must come before helmet
 const corsOptions = {
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    // Allow requests with no origin (mobile apps, curl, Postman)
+    if (!origin) return callback(null, true);
+    const normalised = origin.replace(/\/+$/, '');
+    if (allowedOrigins.includes(normalised)) return callback(null, true);
+    return callback(new Error(`CORS: origin ${origin} not allowed`));
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
