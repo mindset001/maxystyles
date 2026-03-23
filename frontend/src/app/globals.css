@@ -1,0 +1,82 @@
+@import "tailwindcss";
+
+@layer base {
+  /* ── Light mode (default) ── */
+  :root {
+    --background: 40 33% 97%;       /* #FAF8F4 warm cream */
+    --foreground: 0 0% 10%;         /* #1A1A1A near-black */
+    --card: 39 25% 94%;
+    --card-foreground: 0 0% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 10%;
+    --primary: 43 65% 52%;          /* gold */
+    --primary-foreground: 0 0% 0%;
+    --secondary: 38 20% 92%;
+    --secondary-foreground: 0 0% 10%;
+    --muted: 38 20% 92%;
+    --muted-foreground: 0 0% 45%;
+    --accent: 38 20% 92%;
+    --accent-foreground: 0 0% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 38 20% 88%;
+    --input: 38 20% 88%;
+    --ring: 43 65% 52%;
+    --radius: 0.5rem;
+    --font-heading: var(--font-playfair);
+    --font-body: var(--font-lato);
+    --gold: 43 65% 52%;
+    --gold-dark: 43 80% 42%;
+  }
+
+  /* ── Dark mode ── */
+  .dark {
+    --background: 0 0% 4%;          /* #0A0A0A */
+    --foreground: 40 100% 97%;
+    --card: 0 0% 8%;
+    --card-foreground: 40 100% 97%;
+    --popover: 0 0% 8%;
+    --popover-foreground: 40 100% 97%;
+    --primary: 43 65% 52%;
+    --primary-foreground: 0 0% 0%;
+    --secondary: 0 0% 12%;
+    --secondary-foreground: 40 100% 97%;
+    --muted: 0 0% 12%;
+    --muted-foreground: 0 0% 60%;
+    --accent: 0 0% 12%;
+    --accent-foreground: 40 100% 97%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 40 100% 97%;
+    --border: 0 0% 15%;
+    --input: 0 0% 15%;
+    --ring: 43 65% 52%;
+  }
+}
+
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+  }
+}
+
+body {
+  font-family: var(--font-lato), sans-serif;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-playfair), serif;
+  font-weight: 700;
+}
+
+.gold-gradient {
+  background: linear-gradient(135deg, #D4AF37 0%, #F4E5C3 100%);
+}
+
+.luxury-border {
+  border: 1px solid rgba(212, 175, 55, 0.3);
+}
