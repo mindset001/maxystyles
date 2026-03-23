@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { ShoppingBag, User, Menu, ChevronDown, LogOut, Settings } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
@@ -15,6 +15,10 @@ export default function Navigation() {
   const { cartCount, openCart } = useCart();
   const { user, isAuthenticated, logout } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
+
+  // Close mobile menu on route change
+  useEffect(() => { setIsMenuOpen(false); }, [pathname]);
 
   const [logoUrl, setLogoUrl] = useState('');
   const [businessName, setBusinessName] = useState('MaxyStyles');
@@ -163,39 +167,39 @@ export default function Navigation() {
         {isMenuOpen && (
           <div className="md:hidden py-4 border-t border-[#D4AF37]/15">
             <div className="flex flex-col space-y-2">
-              <Link href="/portfolio" className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-[#D4AF37] transition-colors">
+              <Link href="/portfolio" onClick={() => setIsMenuOpen(false)} className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-[#D4AF37] transition-colors">
                 Portfolio
               </Link>
-              <Link href="/gallery" className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-[#D4AF37] transition-colors">
+              <Link href="/gallery" onClick={() => setIsMenuOpen(false)} className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-[#D4AF37] transition-colors">
                 Gallery
               </Link>
-              <Link href="/products" className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-[#D4AF37] transition-colors">
+              <Link href="/products" onClick={() => setIsMenuOpen(false)} className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-[#D4AF37] transition-colors">
                 Products
               </Link>
-              <Link href="/categories" className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-[#D4AF37] transition-colors">
+              <Link href="/categories" onClick={() => setIsMenuOpen(false)} className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-[#D4AF37] transition-colors">
                 Categories
               </Link>
-              <Link href="/about" className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-[#D4AF37] transition-colors">
+              <Link href="/about" onClick={() => setIsMenuOpen(false)} className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-[#D4AF37] transition-colors">
                 About
               </Link>
-              <Link href="/contact" className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-[#D4AF37] transition-colors">
+              <Link href="/contact" onClick={() => setIsMenuOpen(false)} className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-[#D4AF37] transition-colors">
                 Contact
               </Link>
               <div className="border-t border-[#D4AF37]/15 pt-2 mt-2">
                 {isAuthenticated ? (
                   <>
-                    <Link href="/profile" className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-[#D4AF37] transition-colors block">
+                    <Link href="/profile" onClick={() => setIsMenuOpen(false)} className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-[#D4AF37] transition-colors block">
                       My Profile
                     </Link>
                     <button
-                      onClick={handleLogout}
+                      onClick={() => { setIsMenuOpen(false); handleLogout(); }}
                       className="px-4 py-2 text-red-500 hover:text-red-700 transition-colors text-left w-full"
                     >
                       Sign Out
                     </button>
                   </>
                 ) : (
-                  <Link href="/login" className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-[#D4AF37] transition-colors block">
+                  <Link href="/login" onClick={() => setIsMenuOpen(false)} className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-[#D4AF37] transition-colors block">
                     Sign In
                   </Link>
                 )}
