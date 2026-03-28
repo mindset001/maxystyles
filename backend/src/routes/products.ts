@@ -164,4 +164,53 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+// POST /api/products/:id/reviews — Submit a review
+router.post('/:id/reviews', async (req, res) => {
+  try {
+    const { name, email, rating, comment, userId } = req.body;
+
+    if (!name || !name.trim()) {
+      return res.status(400).json({ success: false, message: 'Name is required' });
+    }
+    if (!comment || !comment.trim()) {
+      return res.status(400).json({ success: false, message: 'Comment is required' });
+    }
+    const parsedRating = parseInt(rating, 10);
+    if (!parsedRating || parsedRating < 1 || parsedRating > 5) {
+      return res.status(400).json({ success: false, message: 'Rating must be between 1 and 5' });
+    }
+
+    const product = await Product.findById(req.params.id);
+    if (!product) {
+      return res.status(404).json({ success: false, message: 'Product not found' });
+    }
+
+    const review: any = {
+      name: name.trim(),
+      rating: parsedRating,
+      comment: comment.trim(),
+      createdAt: new Date(),
+    };
+    if (email) review.email = email.trim().toLowerCase();
+    if (userId) review.user = userId;
+
+    (product as any).reviews.push(review);
+
+    // Recalculate aggregate rating
+    const reviews = (product as any).reviews as { rating: number }[];
+    product.reviewCount = reviews.length;
+    product.rating = reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
+
+    await product.save();
+
+    res.status(201).json({
+      success: true,
+      message: 'Review submitted successfully',
+      data: { reviews: (product as any).reviews, rating: product.rating, reviewCount: product.reviewCount },
+    });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: 'Failed to submit review', error: error.message });
+  }
+});
+
 export default router;

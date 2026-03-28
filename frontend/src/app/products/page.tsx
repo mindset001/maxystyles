@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useCart } from '@/context/CartContext';
 import {
@@ -26,14 +27,17 @@ const sortOptions = [
   { value: 'newest',     label: 'Newest First' },
 ];
 
-export default function ProductsPage() {
+function ProductsPageInner() {
   const { addToCart } = useCart();
+  const searchParams = useSearchParams();
 
   const [products, setProducts] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedCategory, setSelectedCategory] = useState(
+    searchParams.get('category') ?? 'all'
+  );
   const [sortBy, setSortBy] = useState('featured');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showFilters, setShowFilters] = useState(false);
@@ -396,5 +400,13 @@ export default function ProductsPage() {
       </section>
 
     </div>
+  );
+}
+
+export default function ProductsPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#FAF8F4] dark:bg-[#0A0A0A]" />}>
+      <ProductsPageInner />
+    </Suspense>
   );
 }

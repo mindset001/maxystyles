@@ -1,6 +1,15 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
 // Product Interface
+export interface IReview {
+  user?: mongoose.Types.ObjectId;
+  name: string;
+  email?: string;
+  rating: number;
+  comment: string;
+  createdAt: Date;
+}
+
 export interface IProduct extends Document {
   name: string;
   description: string;
@@ -13,6 +22,9 @@ export interface IProduct extends Document {
   stockQuantity: number;
   brand?: string;
   tags: string[];
+  reviews: IReview[];
+  rating: number;
+  reviewCount: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -68,7 +80,17 @@ const ProductSchema = new Schema<IProduct>({
   tags: [{
     type: String,
     trim: true
-  }]
+  }],
+  reviews: [{
+    user: { type: Schema.Types.ObjectId, ref: 'User', required: false },
+    name: { type: String, required: true, trim: true },
+    email: { type: String, trim: true, lowercase: true },
+    rating: { type: Number, required: true, min: 1, max: 5 },
+    comment: { type: String, required: true, trim: true, maxlength: 1000 },
+    createdAt: { type: Date, default: Date.now },
+  }],
+  rating: { type: Number, default: 0, min: 0, max: 5 },
+  reviewCount: { type: Number, default: 0 },
 }, {
   timestamps: true
 });

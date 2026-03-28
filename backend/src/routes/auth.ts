@@ -1,5 +1,6 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 import { User } from '../models';
 import { upload, uploadToCloudinary } from '../utils/cloudinary';
 
@@ -230,6 +231,68 @@ router.post('/avatar', authMiddleware, upload.single('avatar'), async (req: any,
     res.json({ success: true, message: 'Avatar updated', data: { avatar: url } });
   } catch (error: any) {
     res.status(500).json({ success: false, message: 'Avatar upload failed', error: error.message });
+  }
+});
+
+// POST /api/auth/forgot-password
+router.post('/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ success: false, message: 'Email is required' });
+
+    const user = await (User as any).findOne({ email: email.toLowerCase() }).select('+password');
+    // Don't reveal whether user exists
+    if (!user) {
+      return res.json({ success: true, message: 'If that email is registered, a reset token has been generated.' });
+    }
+
+    const rawToken = crypto.randomBytes(32).toString('hex');
+    const hashedToken = crypto.createHash('sha256').update(rawToken).digest('hex');
+
+    user.resetPasswordToken = hashedToken;
+    user.resetPasswordExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+    await user.save({ validateBeforeSave: false });
+
+    // In production you would email rawToken. For now return it in response.
+    res.json({
+      success: true,
+      message: 'Reset token generated. Copy the token below and use it on the reset page.',
+      resetToken: rawToken, // dev-only — remove when email service is integrated
+    });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: 'Forgot password failed', error: error.message });
+  }
+});
+
+// POST /api/auth/reset-password
+router.post('/reset-password', async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+    if (!token || !newPassword) {
+      return res.status(400).json({ success: false, message: 'Token and new password are required' });
+    }
+    if (newPassword.length < 6) {
+      return res.status(400).json({ success: false, message: 'Password must be at least 6 characters' });
+    }
+
+    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+    const user = await (User as any).findOne({
+      resetPasswordToken: hashedToken,
+      resetPasswordExpires: { $gt: new Date() },
+    });
+
+    if (!user) {
+      return res.status(400).json({ success: false, message: 'Invalid or expired reset token' });
+    }
+
+    user.password = newPassword;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+
+    res.json({ success: true, message: 'Password has been reset successfully. You can now log in.' });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: 'Password reset failed', error: error.message });
   }
 });
 
