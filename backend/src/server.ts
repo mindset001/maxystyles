@@ -1,12 +1,16 @@
 import express from 'express';
+import { createServer } from 'http';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 import path from 'path';
+import jwt from 'jsonwebtoken';
+import { Server as SocketIOServer } from 'socket.io';
 import { Media } from './models/Media';
 import { Content } from './models/Content';
+import { createChatRouter } from './routes/chat';
 
 // Load environment variables — explicit path so it works regardless of cwd
 dotenv.config({ path: path.join(__dirname, '../.env') });
@@ -19,7 +23,55 @@ import authRoutes from './routes/auth';
 import gradeRoutes from './routes/grades';
 
 const app = express();
+const httpServer = createServer(app);
 const PORT = process.env.PORT || 5000;
+
+// Socket.io setup
+const io = new SocketIOServer(httpServer, {
+  cors: {
+    origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+      if (!origin) return callback(null, true);
+      const normalised = origin.replace(/\/+$/, '');
+      const rawOrigins2 = [
+        process.env.FRONTEND_URL || 'http://localhost:3000',
+        'http://localhost:3000',
+      ];
+      if (rawOrigins2.some(o => o.replace(/\/+$/, '') === normalised)) return callback(null, true);
+      return callback(new Error(`CORS: origin ${origin} not allowed`));
+    },
+    credentials: true,
+    methods: ['GET', 'POST'],
+  },
+});
+
+// Socket.io connection handler
+io.on('connection', (socket) => {
+  // Customer or admin joins a specific chat room
+  socket.on('join-chat', ({ chatId, token }: { chatId: string; token: string }) => {
+    try {
+      jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+      socket.join(`chat:${chatId}`);
+    } catch {
+      socket.emit('error', { message: 'Invalid token' });
+    }
+  });
+
+  // Admin joins the admin-room to receive all chat notifications
+  socket.on('join-admin', ({ token }: { token: string }) => {
+    try {
+      const decoded: any = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+      if (decoded.role === 'admin') {
+        socket.join('admin-room');
+      }
+    } catch {
+      socket.emit('error', { message: 'Invalid token' });
+    }
+  });
+
+  socket.on('leave-chat', ({ chatId }: { chatId: string }) => {
+    socket.leave(`chat:${chatId}`);
+  });
+});
 
 // Build allowed origins list — strip trailing slashes to avoid mismatch
 const rawOrigins = [
@@ -47,10 +99,23 @@ app.use(cors(corsOptions));
 
 app.use(helmet({ crossOriginResourcePolicy: false }));
 
-// Rate limiting
+// Rate limiting — relaxed in development
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100 // limit each IP to 100 requests per windowMs
+  max: process.env.NODE_ENV === 'production' ? 200 : 2000,
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: () => process.env.NODE_ENV === 'development', // disable entirely in dev
+});
+
+// Stricter limiter for auth routes in production only
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: process.env.NODE_ENV === 'production' ? 20 : 1000,
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: () => process.env.NODE_ENV === 'development',
+  message: { success: false, message: 'Too many login attempts. Please try again later.' },
 });
 app.use(limiter);
 
@@ -75,7 +140,8 @@ import adminRoutes from './routes/admin';
 import paymentRoutes from './routes/payments';
 
 // Routes
-app.use('/api/auth', authRoutes);
+app.use('/api/auth', authLimiter, authRoutes);
+app.use('/api/chat', createChatRouter(io));
 app.use('/api/products', productRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/orders', orderRoutes);
@@ -149,9 +215,10 @@ const startServer = async () => {
     console.log('Continuing without MongoDB...');
   }
   
-  app.listen(PORT, () => {
+  httpServer.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
     console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`💬 Socket.io enabled for real-time chat`);
   });
 };
 

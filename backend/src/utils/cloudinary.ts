@@ -2,12 +2,15 @@ import { v2 as cloudinary } from 'cloudinary';
 import multer from 'multer';
 import { Request } from 'express';
 
-// Configure Cloudinary
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET
-});
+// Configure Cloudinary lazily so dotenv has already loaded env vars by the time
+// the first upload is attempted (import statements are hoisted before dotenv.config()).
+function configureCloudinary() {
+  cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+  });
+}
 
 // Configure multer for memory storage
 const storage = multer.memoryStorage();
@@ -33,6 +36,7 @@ export const uploadToCloudinary = async (
   fileBuffer: Buffer,
   folder: string = 'maxystyles'
 ): Promise<{ url: string; publicId: string }> => {
+  configureCloudinary();
   return new Promise((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
       {
@@ -60,6 +64,7 @@ export const uploadToCloudinary = async (
 };
 
 export const deleteFromCloudinary = async (publicId: string): Promise<void> => {
+  configureCloudinary();
   await cloudinary.uploader.destroy(publicId);
 };
 

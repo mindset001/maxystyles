@@ -3,10 +3,11 @@
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { ShoppingBag, User, Menu, ChevronDown, LogOut, Settings } from 'lucide-react';
+import { ShoppingBag, User, Menu, ChevronDown, LogOut, Settings, Sun, Moon } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
+import { useTheme } from '@/context/ThemeContext';
 
 export default function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -14,6 +15,7 @@ export default function Navigation() {
   const userMenuRef = useRef<HTMLDivElement>(null);
   const { cartCount, openCart } = useCart();
   const { user, isAuthenticated, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -144,6 +146,15 @@ export default function Navigation() {
                 </div>
               )}
             </div>
+            {/* Dark/light toggle */}
+            <button
+              onClick={toggleTheme}
+              aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+              className="w-9 h-9 flex items-center justify-center rounded-lg text-gray-500 dark:text-gray-400 hover:text-[#D4AF37] hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+            >
+              {theme === 'dark' ? <Sun className="h-4.5 w-4.5" /> : <Moon className="h-4.5 w-4.5" />}
+            </button>
+
             <Button variant="ghost" size="icon" className="relative text-gray-600 dark:text-gray-400 hover:text-[#D4AF37] hover:bg-black/5 dark:hover:bg-white/5" onClick={openCart} aria-label="Open cart">
               <ShoppingBag className="h-5 w-5" />
               {cartCount > 0 && (

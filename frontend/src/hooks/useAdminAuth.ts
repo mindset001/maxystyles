@@ -14,6 +14,7 @@ interface UseAdminAuthReturn {
   isAuthenticated: boolean;
   isLoading: boolean;
   user: AdminUser | null;
+  token: string | null;
   logout: () => void;
 }
 
@@ -40,6 +41,7 @@ export function useAdminAuth(): UseAdminAuthReturn {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<AdminUser | null>(null);
+  const [token, setToken] = useState<string | null>(null);
 
   const logout = useCallback(() => {
     localStorage.removeItem('adminToken');
@@ -57,11 +59,13 @@ export function useAdminAuth(): UseAdminAuthReturn {
       setIsLoading(false);
       return;
     }
+    setToken(token);
 
     // Check token expiry client-side first (avoids unnecessary network call)
     if (isTokenExpired(token)) {
       localStorage.removeItem('adminToken');
       localStorage.removeItem('adminUser');
+      setToken(null);
       router.push('/admin/login?reason=expired');
       setIsLoading(false);
       return;
@@ -72,6 +76,7 @@ export function useAdminAuth(): UseAdminAuthReturn {
     if (payload?.role !== 'admin') {
       localStorage.removeItem('adminToken');
       localStorage.removeItem('adminUser');
+      setToken(null);
       router.push('/admin/login?reason=unauthorized');
       setIsLoading(false);
       return;
@@ -101,6 +106,7 @@ export function useAdminAuth(): UseAdminAuthReturn {
       .catch(() => {
         localStorage.removeItem('adminToken');
         localStorage.removeItem('adminUser');
+        setToken(null);
         router.push('/admin/login?reason=invalid');
       })
       .finally(() => {
@@ -108,5 +114,5 @@ export function useAdminAuth(): UseAdminAuthReturn {
       });
   }, [router]);
 
-  return { isAuthenticated, isLoading, user, logout };
+  return { isAuthenticated, isLoading, user, token, logout };
 }

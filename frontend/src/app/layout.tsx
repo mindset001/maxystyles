@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import { Playfair_Display, Lato } from "next/font/google";
 import "./globals.css";
-import Navigation from "@/components/Navigation";
-import Footer from "@/components/Footer";
 import ClientProviders from "@/components/ClientProviders";
+import ShellWrapper from "@/components/ShellWrapper";
 
 const playfair = Playfair_Display({
   variable: "--font-playfair",
@@ -55,9 +54,9 @@ export default function RootLayout({
         className={`${playfair.variable} ${lato.variable} antialiased bg-[#FAF8F4] dark:bg-[#0A0A0A] transition-colors duration-300`}
       >
         <ClientProviders>
-          <Navigation />
-          {children}
-          <Footer />
+          <ShellWrapper>
+            {children}
+          </ShellWrapper>
         </ClientProviders>
       </body>
     </html>

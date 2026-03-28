@@ -100,23 +100,23 @@ function ProfileTab({ onToast }: { onToast: (m: string, t: 'success' | 'error') 
   return (
     <div className="space-y-6">
       {/* Avatar */}
-      <Card>
-        <CardHeader><CardTitle className="text-base">Profile Photo</CardTitle></CardHeader>
+      <Card className="bg-white dark:bg-[#111] border-gray-100 dark:border-gray-800">
+        <CardHeader><CardTitle className="text-base text-gray-900 dark:text-white">Profile Photo</CardTitle></CardHeader>
         <CardContent>
           <div className="flex items-center gap-6">
             <div className="relative">
-              <div className="w-24 h-24 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center">
+              <div className="w-24 h-24 rounded-full bg-gray-200 dark:bg-gray-800 overflow-hidden flex items-center justify-center">
                 {user?.avatar ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
                 ) : (
-                  <User className="h-12 w-12 text-gray-400" />
+                  <User className="h-12 w-12 text-gray-400 dark:text-gray-600" />
                 )}
               </div>
               <button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading}
-                className="absolute -bottom-1 -right-1 bg-black text-white rounded-full p-1.5 hover:bg-gray-800 transition-colors disabled:opacity-50"
+                className="absolute -bottom-1 -right-1 bg-[#D4AF37] text-black rounded-full p-1.5 hover:bg-[#B8962E] transition-colors disabled:opacity-50"
               >
                 {uploading ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <Camera className="h-3.5 w-3.5" />}
               </button>
@@ -129,12 +129,12 @@ function ProfileTab({ onToast }: { onToast: (m: string, t: 'success' | 'error') 
               />
             </div>
             <div>
-              <p className="font-medium text-gray-900">{user?.name}</p>
-              <p className="text-sm text-gray-500">{user?.email}</p>
+              <p className="font-medium text-gray-900 dark:text-white">{user?.name}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{user?.email}</p>
               <button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading}
-                className="text-xs text-blue-600 hover:underline mt-1 disabled:opacity-50"
+                className="text-xs text-[#D4AF37] hover:underline mt-1 disabled:opacity-50"
               >
                 {uploading ? 'Uploading…' : 'Change photo'}
               </button>
@@ -144,39 +144,39 @@ function ProfileTab({ onToast }: { onToast: (m: string, t: 'success' | 'error') 
       </Card>
 
       {/* Personal Info */}
-      <Card>
-        <CardHeader><CardTitle className="text-base">Personal Information</CardTitle></CardHeader>
+      <Card className="bg-white dark:bg-[#111] border-gray-100 dark:border-gray-800">
+        <CardHeader><CardTitle className="text-base text-gray-900 dark:text-white">Personal Information</CardTitle></CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Full Name</label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-black focus:border-transparent"
+              className="w-full bg-transparent border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2.5 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[#D4AF37]/50 focus:border-[#D4AF37] outline-none transition"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email Address</label>
             <input
               type="email"
               value={user?.email ?? ''}
               disabled
-              className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-gray-50 text-gray-400 cursor-not-allowed"
+              className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2.5 text-sm bg-gray-50 dark:bg-gray-800 text-gray-400 cursor-not-allowed"
             />
             <p className="text-xs text-gray-400 mt-1">Contact support to change your email</p>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Phone Number</label>
             <input
               type="tel"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="+234..."
-              className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-black focus:border-transparent"
+              className="w-full bg-transparent border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2.5 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[#D4AF37]/50 focus:border-[#D4AF37] outline-none transition"
             />
           </div>
-          <Button onClick={handleSave} disabled={saving} className="flex items-center gap-2">
+          <Button onClick={handleSave} disabled={saving} className="flex items-center gap-2 bg-[#D4AF37] hover:bg-[#B8962E] text-black">
             <Save className="h-4 w-4" />
             {saving ? 'Saving…' : 'Save Changes'}
           </Button>
@@ -184,16 +184,16 @@ function ProfileTab({ onToast }: { onToast: (m: string, t: 'success' | 'error') 
       </Card>
 
       {/* Account info */}
-      <Card className="bg-gray-50">
+      <Card className="bg-gray-50 dark:bg-[#1a1a1a] border-gray-100 dark:border-gray-800">
         <CardContent className="py-4">
-          <div className="flex justify-between text-sm text-gray-500">
+          <div className="flex justify-between text-sm text-gray-500 dark:text-gray-400">
             <span>Account role</span>
-            <span className="capitalize font-medium text-gray-700">{user?.role}</span>
+            <span className="capitalize font-medium text-gray-700 dark:text-gray-300">{user?.role}</span>
           </div>
           {user?.createdAt && (
-            <div className="flex justify-between text-sm text-gray-500 mt-2">
+            <div className="flex justify-between text-sm text-gray-500 dark:text-gray-400 mt-2">
               <span>Member since</span>
-              <span className="font-medium text-gray-700">
+              <span className="font-medium text-gray-700 dark:text-gray-300">
                 {new Date(user.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}
               </span>
             </div>
@@ -218,13 +218,13 @@ function AddressTab({ onToast }: { onToast: (m: string, t: 'success' | 'error') 
 
   const f = (key: keyof typeof addr, label: string, placeholder = '') => (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{label}</label>
       <input
         type="text"
         value={addr[key]}
         onChange={(e) => setAddr((a) => ({ ...a, [key]: e.target.value }))}
         placeholder={placeholder}
-        className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-black focus:border-transparent"
+        className="w-full bg-transparent border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2.5 text-sm text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-600 focus:ring-2 focus:ring-[#D4AF37]/50 focus:border-[#D4AF37] outline-none transition"
       />
     </div>
   );
@@ -242,10 +242,10 @@ function AddressTab({ onToast }: { onToast: (m: string, t: 'success' | 'error') 
   };
 
   return (
-    <Card>
-      <CardHeader><CardTitle className="text-base">Shipping Address</CardTitle></CardHeader>
+    <Card className="bg-white dark:bg-[#111] border-gray-100 dark:border-gray-800">
+      <CardHeader><CardTitle className="text-base text-gray-900 dark:text-white">Shipping Address</CardTitle></CardHeader>
       <CardContent className="space-y-4">
-        <p className="text-sm text-gray-500">This address will be pre-filled at checkout.</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">This address will be pre-filled at checkout.</p>
         {f('street', 'Street Address', '123 Awolowo Road')}
         <div className="grid grid-cols-2 gap-4">
           {f('city', 'City', 'Lagos')}
@@ -255,7 +255,7 @@ function AddressTab({ onToast }: { onToast: (m: string, t: 'success' | 'error') 
           {f('zipCode', 'ZIP / Postal Code', '100001')}
           {f('country', 'Country', 'Nigeria')}
         </div>
-        <Button onClick={handleSave} disabled={saving} className="flex items-center gap-2">
+        <Button onClick={handleSave} disabled={saving} className="flex items-center gap-2 bg-[#D4AF37] hover:bg-[#B8962E] text-black">
           <Save className="h-4 w-4" />
           {saving ? 'Saving…' : 'Save Address'}
         </Button>
@@ -293,7 +293,7 @@ function OrdersTab() {
 
   if (loading) return (
     <div className="flex justify-center py-16">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#D4AF37]" />
     </div>
   );
 
@@ -306,9 +306,9 @@ function OrdersTab() {
 
   if (orders.length === 0) return (
     <div className="text-center py-16">
-      <ShoppingBag className="h-16 w-16 text-gray-200 mx-auto mb-4" />
-      <h3 className="font-medium text-gray-700 mb-2">No orders yet</h3>
-      <p className="text-sm text-gray-500 mb-4">When you place orders, they&apos;ll show up here.</p>
+      <ShoppingBag className="h-16 w-16 text-gray-200 dark:text-gray-700 mx-auto mb-4" />
+      <h3 className="font-medium text-gray-700 dark:text-gray-300 mb-2">No orders yet</h3>
+      <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">When you place orders, they&apos;ll show up here.</p>
       <Button asChild><Link href="/products">Start Shopping</Link></Button>
     </div>
   );
@@ -316,8 +316,8 @@ function OrdersTab() {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="font-semibold text-gray-900">{orders.length} order{orders.length !== 1 ? 's' : ''}</h2>
-        <button onClick={fetchOrders} className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1">
+        <h2 className="font-semibold text-gray-900 dark:text-white">{orders.length} order{orders.length !== 1 ? 's' : ''}</h2>
+        <button onClick={fetchOrders} className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 flex items-center gap-1">
           <RefreshCw className="h-3.5 w-3.5" /> Refresh
         </button>
       </div>
@@ -326,17 +326,17 @@ function OrdersTab() {
         const cfg = STATUS_CONFIG[order.status] ?? STATUS_CONFIG.pending;
         const isOpen = expanded === order._id;
         return (
-          <Card key={order._id} className="overflow-hidden">
+          <Card key={order._id} className="overflow-hidden bg-white dark:bg-[#111] border-gray-100 dark:border-gray-800">
             <button
               onClick={() => setExpanded(isOpen ? null : order._id)}
-              className="w-full text-left p-4 hover:bg-gray-50 transition-colors"
+              className="w-full text-left p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
             >
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-mono text-xs text-gray-400">
                     #{order._id.slice(-8).toUpperCase()}
                   </p>
-                  <p className="text-sm font-medium text-gray-900 mt-0.5">
+                  <p className="text-sm font-medium text-gray-900 dark:text-white mt-0.5">
                     {order.products.length} item{order.products.length !== 1 ? 's' : ''} · ${order.totalAmount.toFixed(2)}
                   </p>
                   <p className="text-xs text-gray-400 mt-0.5">
@@ -353,22 +353,22 @@ function OrdersTab() {
             </button>
 
             {isOpen && (
-              <div className="border-t px-4 pb-4 pt-3 space-y-3">
+              <div className="border-t border-gray-100 dark:border-gray-800 px-4 pb-4 pt-3 space-y-3">
                 {/* Items */}
                 <div className="space-y-2">
                   {order.products.map((item, i) => (
-                    <div key={i} className="flex justify-between items-center text-sm bg-gray-50 rounded-lg px-3 py-2">
+                    <div key={i} className="flex justify-between items-center text-sm bg-gray-50 dark:bg-gray-800/50 rounded-xl px-3 py-2">
                       <div>
-                        <p className="font-medium">{item.productName ?? 'Item'}</p>
-                        <p className="text-xs text-gray-500">Size: {item.size} · Color: {item.color} · Qty: {item.quantity}</p>
+                        <p className="font-medium text-gray-900 dark:text-white">{item.productName ?? 'Item'}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">Size: {item.size} · Color: {item.color} · Qty: {item.quantity}</p>
                       </div>
-                      <p className="font-semibold">${(item.price * item.quantity).toFixed(2)}</p>
+                      <p className="font-semibold text-gray-900 dark:text-white">${(item.price * item.quantity).toFixed(2)}</p>
                     </div>
                   ))}
                 </div>
 
                 {/* Shipping */}
-                <div className="text-sm text-gray-600 flex items-start gap-2">
+                <div className="text-sm text-gray-600 dark:text-gray-400 flex items-start gap-2">
                   <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0 text-gray-400" />
                   <span>
                     {order.shippingAddress.street}, {order.shippingAddress.city}, {order.shippingAddress.state}, {order.shippingAddress.country}
@@ -377,8 +377,8 @@ function OrdersTab() {
 
                 {/* Payment */}
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-500">Payment</span>
-                  <span className="capitalize font-medium">
+                  <span className="text-gray-500 dark:text-gray-400">Payment</span>
+                  <span className="capitalize font-medium text-gray-900 dark:text-white">
                     {order.paymentMethod?.replace('_', ' ') ?? '—'} ·{' '}
                     <span className={order.paymentStatus === 'completed' ? 'text-green-600' : 'text-yellow-600'}>
                       {order.paymentStatus}
@@ -424,19 +424,19 @@ function SecurityTab({ onToast }: { onToast: (m: string, t: 'success' | 'error')
 
   const pwInput = (label: string, value: string, onChange: (v: string) => void, autoComplete: string) => (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{label}</label>
       <div className="relative">
         <input
           type={show ? 'text' : 'password'}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           autoComplete={autoComplete}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2.5 pr-10 text-sm focus:ring-2 focus:ring-black focus:border-transparent"
+          className="w-full bg-transparent border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2.5 pr-10 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[#D4AF37]/50 focus:border-[#D4AF37] outline-none transition"
         />
         <button
           type="button"
           onClick={() => setShow((s) => !s)}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#D4AF37] transition-colors"
         >
           {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
         </button>
@@ -445,17 +445,17 @@ function SecurityTab({ onToast }: { onToast: (m: string, t: 'success' | 'error')
   );
 
   return (
-    <Card>
-      <CardHeader><CardTitle className="text-base flex items-center gap-2"><Lock className="h-4 w-4" /> Change Password</CardTitle></CardHeader>
+    <Card className="bg-white dark:bg-[#111] border-gray-100 dark:border-gray-800">
+      <CardHeader><CardTitle className="text-base flex items-center gap-2 text-gray-900 dark:text-white"><Lock className="h-4 w-4" /> Change Password</CardTitle></CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           {pwInput('Current Password', current, setCurrent, 'current-password')}
           {pwInput('New Password (min 6 chars)', next, setNext, 'new-password')}
           {pwInput('Confirm New Password', confirm, setConfirm, 'new-password')}
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-lg">{error}</div>
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-sm px-4 py-3 rounded-xl">{error}</div>
           )}
-          <Button type="submit" disabled={saving} className="flex items-center gap-2">
+          <Button type="submit" disabled={saving} className="flex items-center gap-2 bg-[#D4AF37] hover:bg-[#B8962E] text-black">
             <Lock className="h-4 w-4" />
             {saving ? 'Saving…' : 'Change Password'}
           </Button>
@@ -496,33 +496,33 @@ export default function ProfilePage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#FAF8F4] dark:bg-[#0A0A0A] transition-colors duration-300">
       {toast && <Toast msg={toast.msg} type={toast.type} />}
 
       <div className="container mx-auto px-4 py-8">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">My Account</h1>
-          <p className="text-gray-500 mt-1">Welcome back, {user?.name?.split(' ')[0]}</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">My Account</h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-1">Welcome back, {user?.name?.split(' ')[0]}</p>
         </div>
 
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Sidebar */}
           <aside className="lg:w-64 flex-shrink-0">
-            <Card>
+            <Card className="bg-white dark:bg-[#111] border-gray-100 dark:border-gray-800">
               <CardContent className="p-2">
                 {/* User summary */}
-                <div className="px-3 py-3 mb-1 border-b">
+                <div className="px-3 py-3 mb-1 border-b border-gray-100 dark:border-gray-800">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center flex-shrink-0">
+                    <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-800 overflow-hidden flex items-center justify-center flex-shrink-0">
                       {user?.avatar ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
                       ) : (
-                        <User className="h-5 w-5 text-gray-400" />
+                        <User className="h-5 w-5 text-gray-400 dark:text-gray-600" />
                       )}
                     </div>
                     <div className="min-w-0">
-                      <p className="font-medium text-sm truncate">{user?.name}</p>
+                      <p className="font-medium text-sm text-gray-900 dark:text-white truncate">{user?.name}</p>
                       <p className="text-xs text-gray-400 truncate">{user?.email}</p>
                     </div>
                   </div>
@@ -534,10 +534,10 @@ export default function ProfilePage() {
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
-                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors ${
                         activeTab === tab.id
-                          ? 'bg-black text-white'
-                          : 'text-gray-600 hover:bg-gray-100'
+                          ? 'bg-[#D4AF37] text-black font-medium'
+                          : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
                       }`}
                     >
                       {tab.icon}
@@ -546,10 +546,10 @@ export default function ProfilePage() {
                   ))}
                 </nav>
 
-                <div className="mt-2 pt-2 border-t">
+                <div className="mt-2 pt-2 border-t border-gray-100 dark:border-gray-800">
                   <button
                     onClick={handleLogout}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-red-500 hover:bg-red-50 transition-colors"
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                   >
                     <LogOut className="h-4 w-4" />
                     Sign Out

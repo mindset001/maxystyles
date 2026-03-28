@@ -2,28 +2,35 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
-import { 
-  LayoutDashboard, 
-  Package, 
-  Users, 
-  ShoppingCart, 
-  BarChart3, 
-  Settings, 
+import { useTheme } from '@/context/ThemeContext';
+import {
+  LayoutDashboard,
+  Package,
+  Users,
+  ShoppingCart,
+  BarChart3,
+  Settings,
   LogOut,
   Menu,
   X,
   Bell,
-  Search,
-  Plus,
-  Eye,
   Edit,
-  Trash2,
   Image,
   MessageSquare,
+  MessageCircle,
+  FileText,
+  Sun,
+  Moon,
+  ChevronRight,
+  TrendingUp,
+  AlertTriangle,
+  Globe,
+  Plus,
+  Eye,
+  Trash2,
   Upload,
   Save,
-  FileText,
-  Globe
+  Search,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -32,19 +39,21 @@ import CustomersManagement from '@/components/admin/CustomersManagement';
 import PortfolioManagement from '@/components/admin/PortfolioManagement';
 import ProductsManagement from '@/components/admin/ProductsManagement';
 import CategoriesManagement from '@/components/admin/CategoriesManagement';
+import ChatsManagement from '@/components/admin/ChatsManagement';
 
 const sidebarItems = [
-  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { id: 'products', label: 'Products', icon: Package },
-  { id: 'categories', label: 'Categories', icon: BarChart3 },
-  { id: 'portfolio', label: 'Portfolio', icon: Image },
-  { id: 'orders', label: 'Orders', icon: ShoppingCart },
-  { id: 'customers', label: 'Customers', icon: Users },
-  { id: 'content', label: 'Content Manager', icon: Edit },
-  { id: 'media', label: 'Media Library', icon: FileText },
-  { id: 'testimonials', label: 'Testimonials', icon: MessageSquare },
-  { id: 'analytics', label: 'Analytics', icon: BarChart3 },
-  { id: 'settings', label: 'Settings', icon: Settings },
+  { id: 'dashboard',    label: 'Dashboard',       icon: LayoutDashboard },
+  { id: 'products',     label: 'Products',         icon: Package },
+  { id: 'categories',   label: 'Categories',       icon: BarChart3 },
+  { id: 'portfolio',    label: 'Portfolio',        icon: Image },
+  { id: 'orders',       label: 'Orders',           icon: ShoppingCart },
+  { id: 'customers',    label: 'Customers',        icon: Users },
+  { id: 'chats',        label: 'Customer Chats',   icon: MessageCircle },
+  { id: 'content',      label: 'Content Manager',  icon: Edit },
+  { id: 'media',        label: 'Media Library',    icon: FileText },
+  { id: 'testimonials', label: 'Testimonials',     icon: MessageSquare },
+  { id: 'analytics',   label: 'Analytics',        icon: TrendingUp },
+  { id: 'settings',    label: 'Settings',         icon: Settings },
 ];
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
@@ -100,182 +109,196 @@ const DashboardOverview = () => {
 
   useEffect(() => { fetchDashboard(); }, [fetchDashboard]);
 
-  const StatCard = ({ title, value, icon: Icon, prefix = '' }: {
-    title: string; value: number; icon: React.ElementType; prefix?: string;
+  const StatCard = ({ title, value, icon: Icon, prefix = '', accent = false }: {
+    title: string; value: number; icon: React.ElementType; prefix?: string; accent?: boolean;
   }) => (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        <Icon className="h-4 w-4 text-muted-foreground" />
-      </CardHeader>
-      <CardContent>
-        {loading ? (
-          <div className="h-8 w-24 bg-gray-200 animate-pulse rounded" />
-        ) : (
-          <div className="text-2xl font-bold">{prefix}{value.toLocaleString()}</div>
-        )}
-      </CardContent>
-    </Card>
+    <div className={`rounded-2xl p-5 border transition-all ${
+      accent
+        ? 'bg-[#D4AF37] border-[#D4AF37] text-black'
+        : 'bg-white dark:bg-[#1a1a1a] border-gray-100 dark:border-gray-800 text-gray-900 dark:text-white'
+    }`}>
+      <div className="flex items-center justify-between mb-4">
+        <p className={`text-xs font-semibold uppercase tracking-widest ${
+          accent ? 'text-black/60' : 'text-gray-400 dark:text-gray-500'
+        }`}>{title}</p>
+        <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${
+          accent ? 'bg-black/15' : 'bg-[#D4AF37]/10'
+        }`}>
+          <Icon className={`w-4 h-4 ${accent ? 'text-black' : 'text-[#D4AF37]'}`} />
+        </div>
+      </div>
+      {loading
+        ? <div className="h-8 w-28 bg-gray-200 dark:bg-gray-700 animate-pulse rounded-lg" />
+        : <p className="text-3xl font-bold tracking-tight">{prefix}{value.toLocaleString()}</p>
+      }
+    </div>
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-gray-900">Dashboard Overview</h1>
-        <Button variant="outline" onClick={fetchDashboard} disabled={loading}>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
+          <p className="text-sm text-gray-400 mt-0.5">Welcome back — here&apos;s what&apos;s happening today.</p>
+        </div>
+        <button
+          onClick={fetchDashboard}
+          disabled={loading}
+          className="text-sm px-4 py-2 rounded-xl border border-[#D4AF37]/50 text-[#D4AF37] hover:bg-[#D4AF37]/10 transition disabled:opacity-50"
+        >
           {loading ? 'Refreshing…' : 'Refresh'}
-        </Button>
+        </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard title="Total Revenue" value={stats.totalRevenue} icon={BarChart3} prefix="₦" />
-        <StatCard title="Total Orders" value={stats.totalOrders} icon={ShoppingCart} />
-        <StatCard title="Products" value={stats.totalProducts} icon={Package} />
-        <StatCard title="Customers" value={stats.totalCustomers} icon={Users} />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard title="Total Revenue" value={stats.totalRevenue} icon={BarChart3} prefix="₦" accent />
+        <StatCard title="Total Orders"  value={stats.totalOrders}  icon={ShoppingCart} />
+        <StatCard title="Products"      value={stats.totalProducts} icon={Package} />
+        <StatCard title="Customers"     value={stats.totalCustomers} icon={Users} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Orders */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Orders</CardTitle>
-            <CardDescription>Latest 5 orders across all channels</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {loading ? (
-              <div className="space-y-3">
-                {[...Array(3)].map((_, i) => (
-                  <div key={i} className="h-14 bg-gray-100 animate-pulse rounded-lg" />
-                ))}
-              </div>
-            ) : recentOrders.length === 0 ? (
-              <p className="text-gray-400 text-sm py-4 text-center">No orders yet.</p>
-            ) : (
-              <div className="space-y-3">
-                {recentOrders.map((order) => {
-                  const customer = order.user?.name ?? order.guestInfo?.name ?? 'Guest';
-                  return (
-                    <div key={order._id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <div>
-                        <p className="font-medium text-sm">{customer}</p>
-                        <p className="text-xs text-gray-400">#{order._id.slice(-8).toUpperCase()}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-semibold text-sm">₦{(order.totalAmount ?? 0).toLocaleString()}</p>
-                        <span className={`text-xs px-2 py-0.5 rounded-full ${STATUS_COLORS[order.status] ?? 'bg-gray-100 text-gray-600'}`}>
-                          {order.status}
-                        </span>
-                      </div>
+        <div className="bg-white dark:bg-[#1a1a1a] rounded-2xl border border-gray-100 dark:border-gray-800 p-5">
+          <div className="flex items-center justify-between mb-4">
+            <p className="font-semibold text-gray-900 dark:text-white">Recent Orders</p>
+            <span className="text-xs text-gray-400">Latest 5</span>
+          </div>
+          {loading ? (
+            <div className="space-y-3">
+              {[...Array(4)].map((_, i) => <div key={i} className="h-14 bg-gray-100 dark:bg-gray-800 animate-pulse rounded-xl" />)}
+            </div>
+          ) : recentOrders.length === 0 ? (
+            <p className="text-gray-400 text-sm py-6 text-center">No orders yet.</p>
+          ) : (
+            <div className="space-y-2">
+              {recentOrders.map((order) => {
+                const customer = order.user?.name ?? order.guestInfo?.name ?? 'Guest';
+                return (
+                  <div key={order._id} className="flex items-center justify-between px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800/60 hover:bg-[#D4AF37]/5 transition">
+                    <div>
+                      <p className="font-medium text-sm text-gray-900 dark:text-white">{customer}</p>
+                      <p className="text-xs text-gray-400">#{order._id.slice(-8).toUpperCase()}</p>
                     </div>
-                  );
-                })}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                    <div className="text-right">
+                      <p className="font-semibold text-sm text-gray-900 dark:text-white">₦{(order.totalAmount ?? 0).toLocaleString()}</p>
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_COLORS[order.status] ?? 'bg-gray-100 text-gray-600'}`}>
+                        {order.status}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
 
         {/* Low Stock */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Low Stock Alert</CardTitle>
-            <CardDescription>Products with 5 or fewer units remaining</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {loading ? (
-              <div className="space-y-3">
-                {[...Array(3)].map((_, i) => (
-                  <div key={i} className="h-14 bg-gray-100 animate-pulse rounded-lg" />
-                ))}
-              </div>
-            ) : lowStock.length === 0 ? (
-              <p className="text-gray-400 text-sm py-4 text-center">All products are well-stocked!</p>
-            ) : (
-              <div className="space-y-3">
-                {lowStock.map((p) => (
-                  <div key={p._id} className="flex items-center justify-between p-3 bg-red-50 rounded-lg border border-red-200">
-                    <div>
-                      <p className="font-medium text-sm">{p.name}</p>
-                      <p className="text-xs text-gray-500">{p.category}</p>
-                    </div>
-                    <p className="text-red-600 font-semibold text-sm">{p.stockQuantity} left</p>
+        <div className="bg-white dark:bg-[#1a1a1a] rounded-2xl border border-gray-100 dark:border-gray-800 p-5">
+          <div className="flex items-center justify-between mb-4">
+            <p className="font-semibold text-gray-900 dark:text-white">Low Stock Alert</p>
+            <AlertTriangle className="w-4 h-4 text-amber-400" />
+          </div>
+          {loading ? (
+            <div className="space-y-3">
+              {[...Array(4)].map((_, i) => <div key={i} className="h-14 bg-gray-100 dark:bg-gray-800 animate-pulse rounded-xl" />)}
+            </div>
+          ) : lowStock.length === 0 ? (
+            <p className="text-gray-400 text-sm py-6 text-center">All products are well-stocked!</p>
+          ) : (
+            <div className="space-y-2">
+              {lowStock.map((p) => (
+                <div key={p._id} className="flex items-center justify-between px-4 py-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800/40">
+                  <div>
+                    <p className="font-medium text-sm text-gray-900 dark:text-white">{p.name}</p>
+                    <p className="text-xs text-gray-500">{p.category}</p>
                   </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                  <span className="text-red-500 font-bold text-sm">{p.stockQuantity} left</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
 };
 
-const AdminSidebar = ({ 
-  activeSection, 
-  setActiveSection, 
-  isCollapsed, 
-  setIsCollapsed 
+const AdminSidebar = ({
+  activeSection,
+  setActiveSection,
+  isCollapsed,
+  setIsCollapsed,
+  onLogout,
 }: {
   activeSection: string;
-  setActiveSection: (section: string) => void;
+  setActiveSection: (s: string) => void;
   isCollapsed: boolean;
-  setIsCollapsed: (collapsed: boolean) => void;
+  setIsCollapsed: (v: boolean) => void;
+  onLogout: () => void;
 }) => {
   return (
-    <div className={`bg-gray-900 text-white transition-all duration-300 ${
-      isCollapsed ? 'w-16' : 'w-64'
-    } min-h-screen flex flex-col`}>
-      {/* Header */}
-      <div className="p-4 border-b border-gray-700">
-        <div className="flex items-center justify-between">
-          {!isCollapsed && (
-            <div>
-              <h2 className="text-xl font-bold">MaxyStyles</h2>
-              <p className="text-sm text-gray-400">Tailoring & Monogram</p>
+    <aside className={`${
+      isCollapsed ? 'w-16' : 'w-60'
+    } flex-shrink-0 flex flex-col min-h-screen bg-[#0A0A0A] dark:bg-[#0A0A0A] border-r border-[#D4AF37]/15 transition-all duration-300 z-40`}>
+
+      {/* Logo */}
+      <div className="flex items-center justify-between px-4 h-16 border-b border-[#D4AF37]/15">
+        {!isCollapsed && (
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg bg-[#D4AF37] flex items-center justify-center">
+              <span className="text-black font-black text-xs">M</span>
             </div>
-          )}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            className="text-white hover:bg-gray-800"
-          >
-            {isCollapsed ? <Menu className="h-4 w-4" /> : <X className="h-4 w-4" />}
-          </Button>
-        </div>
+            <div>
+              <p className="text-white font-bold text-sm leading-none">MaxyStyles</p>
+              <p className="text-[#D4AF37]/60 text-[10px] leading-none mt-0.5">Admin Panel</p>
+            </div>
+          </div>
+        )}
+        <button
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-[#D4AF37] hover:bg-[#D4AF37]/10 transition"
+        >
+          {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <X className="w-4 h-4" />}
+        </button>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 p-4">
-        <ul className="space-y-2">
-          {sidebarItems.map((item) => (
-            <li key={item.id}>
-              <button
-                onClick={() => setActiveSection(item.id)}
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
-                  activeSection === item.id
-                    ? 'bg-blue-600 text-white'
-                    : 'text-gray-300 hover:bg-gray-800 hover:text-white'
-                }`}
-              >
-                <item.icon className="h-5 w-5 flex-shrink-0" />
-                {!isCollapsed && <span className="truncate">{item.label}</span>}
-              </button>
-            </li>
-          ))}
+      {/* Nav */}
+      <nav className="flex-1 py-4 px-2 overflow-y-auto">
+        <ul className="space-y-0.5">
+          {sidebarItems.map((item) => {
+            const active = activeSection === item.id;
+            return (
+              <li key={item.id}>
+                <button
+                  onClick={() => setActiveSection(item.id)}
+                  title={isCollapsed ? item.label : undefined}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                    active
+                      ? 'bg-[#D4AF37] text-black shadow-lg shadow-[#D4AF37]/20'
+                      : 'text-gray-400 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <item.icon className={`flex-shrink-0 w-4 h-4 ${active ? 'text-black' : ''}`} />
+                  {!isCollapsed && <span className="truncate">{item.label}</span>}
+                </button>
+              </li>
+            );
+          })}
         </ul>
       </nav>
 
-      {/* Footer */}
-      <div className="p-4 border-t border-gray-700">
-        <Button
-          variant="ghost"
-          className="w-full flex items-center gap-3 px-3 py-2 text-gray-300 hover:bg-gray-800 hover:text-white"
+      {/* Logout */}
+      <div className="px-2 py-4 border-t border-[#D4AF37]/15">
+        <button
+          onClick={onLogout}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-400 hover:text-red-400 hover:bg-red-400/10 transition"
         >
-          <LogOut className="h-5 w-5 flex-shrink-0" />
+          <LogOut className="flex-shrink-0 w-4 h-4" />
           {!isCollapsed && <span>Logout</span>}
-        </Button>
+        </button>
       </div>
-    </div>
+    </aside>
   );
 };
 
@@ -1168,90 +1191,127 @@ const TestimonialsManagement = () => {
 
 export default function AdminDashboard() {
   const { isAuthenticated, isLoading, user, logout } = useAdminAuth();
+  const { theme, toggleTheme } = useTheme();
   const [activeSection, setActiveSection] = useState('dashboard');
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
-  const handleLogout = () => {
-    logout();
-  };
+  const handleLogout = () => logout();
+  const activeLabel = sidebarItems.find(i => i.id === activeSection)?.label ?? 'Dashboard';
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-[#FAF8F4] dark:bg-[#0A0A0A]">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
+          <div className="w-12 h-12 rounded-full border-2 border-[#D4AF37] border-t-transparent animate-spin mx-auto" />
+          <p className="mt-4 text-gray-400 text-sm">Loading admin panel…</p>
         </div>
       </div>
     );
   }
 
-  if (!isAuthenticated) {
-    return null;
-  }
+  if (!isAuthenticated) return null;
 
   const renderContent = () => {
     switch (activeSection) {
-      case 'dashboard':
-        return <DashboardOverview />;
-      case 'products':
-        return <ProductsManagement />;
-      case 'categories':
-        return <CategoriesManagement />;
-      case 'portfolio':
-        return <PortfolioManagement />;
-      case 'content':
-        return <ContentManagement />;
-      case 'media':
-        return <MediaLibrary />;
-      case 'testimonials':
-        return <TestimonialsManagement />;
-      case 'orders':
-        return <OrdersManagement />;
-      case 'customers':
-        return <CustomersManagement />;
-      case 'analytics':
-        return <div className="p-6"><h1 className="text-3xl font-bold">Analytics</h1><p>Analytics dashboard coming soon...</p></div>;
-      case 'settings':
-        return <div className="p-6"><h1 className="text-3xl font-bold">Settings</h1><p>Settings panel coming soon...</p></div>;
-      default:
-        return <DashboardOverview />;
+      case 'dashboard':    return <DashboardOverview />;
+      case 'products':     return <ProductsManagement />;
+      case 'categories':   return <CategoriesManagement />;
+      case 'portfolio':    return <PortfolioManagement />;
+      case 'content':      return <ContentManagement />;
+      case 'media':        return <MediaLibrary />;
+      case 'testimonials': return <TestimonialsManagement />;
+      case 'orders':       return <OrdersManagement />;
+      case 'customers':    return <CustomersManagement />;
+      case 'chats':        return <ChatsManagement />;
+      case 'analytics':    return (
+        <div className="flex flex-col items-center justify-center h-64 text-gray-400 gap-2">
+          <TrendingUp className="w-10 h-10 opacity-30" />
+          <p className="text-sm">Analytics coming soon</p>
+        </div>
+      );
+      case 'settings':     return (
+        <div className="flex flex-col items-center justify-center h-64 text-gray-400 gap-2">
+          <Settings className="w-10 h-10 opacity-30" />
+          <p className="text-sm">Settings coming soon</p>
+        </div>
+      );
+      default:             return <DashboardOverview />;
     }
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
-      {/* Sidebar */}
-      <AdminSidebar
-        activeSection={activeSection}
-        setActiveSection={setActiveSection}
-        isCollapsed={isCollapsed}
-        setIsCollapsed={setIsCollapsed}
-      />
+    <div className="flex min-h-screen bg-[#F5F5F0] dark:bg-[#0F0F0F] transition-colors duration-300">
+      {/* Mobile overlay */}
+      {mobileOpen && (
+        <div
+          className="fixed inset-0 z-30 bg-black/60 lg:hidden"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col">
-        {/* Top Header */}
-        <header className="bg-white shadow-sm border-b p-4">
-          <div className="flex justify-between items-center">
+      {/* Sidebar — desktop always visible, mobile drawer */}
+      <div className={`fixed lg:static inset-y-0 left-0 z-40 transition-transform duration-300 ${
+        mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+      }`}>
+        <AdminSidebar
+          activeSection={activeSection}
+          setActiveSection={(s) => { setActiveSection(s); setMobileOpen(false); }}
+          isCollapsed={isCollapsed}
+          setIsCollapsed={setIsCollapsed}
+          onLogout={handleLogout}
+        />
+      </div>
+
+      {/* Main column */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Top bar */}
+        <header className="h-16 flex items-center justify-between px-6 bg-white dark:bg-[#111] border-b border-gray-100 dark:border-gray-800 sticky top-0 z-20">
+          <div className="flex items-center gap-3">
+            {/* Mobile menu toggle */}
+            <button
+              onClick={() => setMobileOpen(o => !o)}
+              className="lg:hidden w-8 h-8 flex items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
             <div>
-              <h1 className="text-xl font-semibold text-gray-800">
-                {sidebarItems.find(item => item.id === activeSection)?.label || 'Dashboard'}
-              </h1>
-              <p className="text-sm text-gray-600">
-                Welcome back, Admin
-              </p>
+              <p className="font-semibold text-gray-900 dark:text-white text-sm">{activeLabel}</p>
+              <p className="text-xs text-gray-400">MaxyStyles Admin</p>
             </div>
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" size="sm">
-                <Bell className="h-4 w-4" />
-              </Button>
-              <div className="w-8 h-8 bg-gray-300 rounded-full"></div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {/* Dark/light toggle */}
+            <button
+              onClick={toggleTheme}
+              className="w-9 h-9 flex items-center justify-center rounded-xl border border-gray-100 dark:border-gray-800 text-gray-500 dark:text-gray-400 hover:border-[#D4AF37]/50 hover:text-[#D4AF37] transition"
+              title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            >
+              {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
+
+            {/* Bell */}
+            <button className="w-9 h-9 flex items-center justify-center rounded-xl border border-gray-100 dark:border-gray-800 text-gray-500 dark:text-gray-400 hover:border-[#D4AF37]/50 hover:text-[#D4AF37] transition">
+              <Bell className="w-4 h-4" />
+            </button>
+
+            {/* Avatar */}
+            <div className="flex items-center gap-2 pl-2 border-l border-gray-100 dark:border-gray-800">
+              <div className="w-8 h-8 rounded-xl bg-[#D4AF37] flex items-center justify-center">
+                <span className="text-black font-bold text-xs">
+                  {user?.name?.charAt(0).toUpperCase() ?? 'A'}
+                </span>
+              </div>
+              <div className="hidden sm:block">
+                <p className="text-xs font-semibold text-gray-900 dark:text-white leading-none">{user?.name ?? 'Admin'}</p>
+                <p className="text-[10px] text-gray-400 leading-none mt-0.5">Administrator</p>
+              </div>
             </div>
           </div>
         </header>
 
-        {/* Content Area */}
+        {/* Page content */}
         <main className="flex-1 p-6 overflow-auto">
           {renderContent()}
         </main>
