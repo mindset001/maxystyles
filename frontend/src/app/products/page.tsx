@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import { useCart } from '@/context/CartContext';
 import {
   Search,
@@ -78,10 +79,12 @@ export default function ProductsPage() {
 
   const inputClass = 'bg-white dark:bg-[#111] text-[#1A1A1A] dark:text-white border border-[#D4AF37]/30 dark:border-[#D4AF37]/15 px-4 py-2.5 text-sm placeholder:text-[#8C7B6E] dark:placeholder:text-gray-600 focus:outline-none focus:border-[#D4AF37] transition-colors duration-200';
 
-  const ProductCard = ({ product }: { product: any }) => (
+  const ProductCard = ({ product }: { product: any }) => {
+    const productId = product._id ?? product.id;
+    return (
     <div className={`group overflow-hidden border border-[#D4AF37]/25 dark:border-[#D4AF37]/10 hover:border-[#D4AF37]/60 transition-all duration-500 bg-white/40 dark:bg-transparent shadow-sm hover:shadow-md dark:hover:shadow-none ${viewMode === 'list' ? 'flex' : ''}`}>
       {/* Image */}
-      <div className={`relative overflow-hidden bg-[#EDE7DC] dark:bg-[#111] flex-shrink-0 ${viewMode === 'list' ? 'w-48' : 'aspect-square'}`}>
+      <Link href={`/products/${productId}`} className={`relative overflow-hidden bg-[#EDE7DC] dark:bg-[#111] flex-shrink-0 block ${viewMode === 'list' ? 'w-48' : 'aspect-square'}`}>
         {product.images?.[0] ? (
           <img
             src={product.images[0]}
@@ -103,14 +106,16 @@ export default function ProductsPage() {
             <span className="text-white text-xs uppercase tracking-widest font-semibold border border-white/30 px-3 py-1">Out of Stock</span>
           </div>
         )}
-      </div>
+      </Link>
 
       {/* Body */}
       <div className="p-5 flex flex-col flex-1">
         <p className="text-[10px] uppercase tracking-widest text-[#D4AF37] mb-2">{product.category}</p>
-        <h3 className="font-bold text-sm mb-2 text-[#1A1A1A] dark:text-white group-hover:text-[#D4AF37] transition-colors duration-300 line-clamp-2">
-          {product.name}
-        </h3>
+        <Link href={`/products/${productId}`}>
+          <h3 className="font-bold text-sm mb-2 text-[#1A1A1A] dark:text-white group-hover:text-[#D4AF37] transition-colors duration-300 line-clamp-2 hover:text-[#D4AF37]">
+            {product.name}
+          </h3>
+        </Link>
 
         {product.rating != null && (
           <div className="flex items-center gap-1 mb-2">
@@ -137,35 +142,45 @@ export default function ProductsPage() {
           </div>
         )}
 
-        <button
-          className={`mt-auto w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs uppercase tracking-widest font-semibold transition-colors duration-200 ${
-            product.inStock
-              ? 'bg-[#D4AF37] text-black hover:bg-[#F4E5C3]'
-              : 'bg-[#D4AF37]/10 dark:bg-[#D4AF37]/5 text-[#8C7B6E] cursor-not-allowed'
-          }`}
-          disabled={!product.inStock}
-          onClick={() =>
-            product.inStock &&
-            addToCart({
-              id: product._id ?? product.id,
-              name: product.name,
-              price: product.price,
-              originalPrice: product.originalPrice ?? null,
-              image: product.images?.[0] ?? '',
-              category: product.category,
-              selectedSize: product.sizes?.[0] ?? 'One Size',
-              selectedColor: product.colors?.[0] ?? 'Default',
-              inStock: product.inStock,
-            })
-          }
-        >
-          {product.inStock ? (
-            <><ShoppingCart className="w-3.5 h-3.5" />Add to Cart</>
-          ) : 'Out of Stock'}
-        </button>
+        <div className="mt-auto flex gap-2">
+          <button
+            className={`flex-1 inline-flex items-center justify-center gap-2 px-3 py-2.5 text-xs uppercase tracking-widest font-semibold transition-colors duration-200 ${
+              product.inStock
+                ? 'bg-[#D4AF37] text-black hover:bg-[#F4E5C3]'
+                : 'bg-[#D4AF37]/10 dark:bg-[#D4AF37]/5 text-[#8C7B6E] cursor-not-allowed'
+            }`}
+            disabled={!product.inStock}
+            onClick={() =>
+              product.inStock &&
+              addToCart({
+                id: productId,
+                name: product.name,
+                price: product.price,
+                originalPrice: product.originalPrice ?? null,
+                image: product.images?.[0] ?? '',
+                category: product.category,
+                selectedSize: product.sizes?.[0] ?? 'One Size',
+                selectedColor: product.colors?.[0] ?? 'Default',
+                inStock: product.inStock,
+              })
+            }
+          >
+            {product.inStock ? (
+              <><ShoppingCart className="w-3.5 h-3.5" />Add to Cart</>
+            ) : 'Out of Stock'}
+          </button>
+          <Link
+            href={`/products/${productId}`}
+            className="px-3 py-2.5 border border-[#D4AF37]/40 dark:border-[#D4AF37]/25 text-[#D4AF37] hover:bg-[#D4AF37] hover:text-black transition-colors duration-200 text-xs uppercase tracking-widest font-semibold"
+            aria-label="View product details"
+          >
+            View
+          </Link>
+        </div>
       </div>
     </div>
   );
+  };
 
   return (
     <div className="bg-[#FAF8F4] dark:bg-[#0A0A0A] text-[#1A1A1A] dark:text-white min-h-screen transition-colors duration-300">

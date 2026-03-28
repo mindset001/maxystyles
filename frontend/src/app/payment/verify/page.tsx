@@ -3,10 +3,9 @@
 import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { CheckCircle2, XCircle, ShoppingBag, ArrowRight, Home, Phone } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
-import { Button } from '@/components/ui/button';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
@@ -20,18 +19,17 @@ function PaymentVerifyInner() {
   const [errorMsg, setErrorMsg] = useState('');
 
   useEffect(() => {
-    // Paystack sends ?reference= or ?trxref= on redirect
     const reference = searchParams.get('reference') || searchParams.get('trxref');
 
     if (!reference) {
-      setErrorMsg('No payment reference found.');
+      setErrorMsg('No payment reference found in the URL.');
       setStatus('failed');
       return;
     }
 
     const stored = sessionStorage.getItem('maxy-pending-order');
     if (!stored) {
-      setErrorMsg('Order details not found. Please contact support with your reference: ' + reference);
+      setErrorMsg(`Order details not found. Please contact us and quote your reference: ${reference}`);
       setStatus('failed');
       return;
     }
@@ -71,64 +69,123 @@ function PaymentVerifyInner() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // ── Loading ──────────────────────────────────────────────────────────────────
   if (status === 'loading') {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-[#0A0A0A] flex items-center justify-center px-4">
-        <div className="text-center">
-          <Loader2 className="h-16 w-16 animate-spin text-[#D4AF37] mx-auto mb-6" />
-          <h1 className="text-2xl font-bold mb-2 dark:text-white">Verifying payment…</h1>
-          <p className="text-gray-500 dark:text-gray-400">Please wait, do not refresh this page.</p>
+      <div className="bg-[#FAF8F4] dark:bg-[#0A0A0A] min-h-screen flex items-center justify-center px-6 text-[#1A1A1A] dark:text-white">
+        <div className="text-center max-w-sm">
+          <div className="relative w-24 h-24 mx-auto mb-8">
+            <div className="absolute inset-0 border-4 border-[#D4AF37]/20 dark:border-[#D4AF37]/10 rounded-full" />
+            <div className="absolute inset-0 border-4 border-transparent border-t-[#D4AF37] rounded-full animate-spin" />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="text-xs font-bold tracking-widest text-[#D4AF37]">M</span>
+            </div>
+          </div>
+          <h1 className="text-2xl font-bold mb-3">Verifying Payment…</h1>
+          <p className="text-[#8C7B6E] dark:text-gray-500 text-sm leading-relaxed">
+            Please wait — do not close or refresh this page.
+            <br />We are confirming your transaction with Paystack.
+          </p>
         </div>
       </div>
     );
   }
 
+  // ── Success ──────────────────────────────────────────────────────────────────
   if (status === 'success') {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-[#0A0A0A] flex items-center justify-center px-4">
-        <div className="text-center max-w-md">
-          <CheckCircle className="h-20 w-20 text-green-500 mx-auto mb-6" />
-          <h1 className="text-3xl font-bold mb-3 dark:text-white">Payment Successful!</h1>
+      <div className="bg-[#FAF8F4] dark:bg-[#0A0A0A] min-h-screen flex items-center justify-center px-6 py-16 text-[#1A1A1A] dark:text-white">
+        <div className="w-full max-w-lg text-center">
+          <div className="relative w-24 h-24 mx-auto mb-8">
+            <div className="absolute inset-0 bg-green-100 dark:bg-green-900/30 rounded-full" />
+            <CheckCircle2 className="absolute inset-0 m-auto h-12 w-12 text-green-500" />
+          </div>
+          <div className="flex items-center gap-3 justify-center mb-6">
+            <span className="h-px w-10 bg-[#D4AF37]" />
+            <span className="text-[#D4AF37] text-xs uppercase tracking-[0.3em]">Order Confirmed</span>
+            <span className="h-px w-10 bg-[#D4AF37]" />
+          </div>
+          <h1 className="text-4xl font-bold mb-3 leading-tight">
+            Payment <span className="text-[#D4AF37] italic font-normal">successful.</span>
+          </h1>
           {orderId && (
-            <p className="text-sm text-gray-400 mb-2">
-              Order ref:{' '}
-              <span className="font-mono text-[#D4AF37]">#{orderId.slice(-8).toUpperCase()}</span>
-            </p>
+            <div className="inline-flex items-center gap-2 bg-white dark:bg-[#111] border border-gray-100 dark:border-gray-800 rounded-full px-5 py-2.5 mb-6">
+              <span className="text-xs text-gray-500 dark:text-gray-500 uppercase tracking-widest">Order Ref</span>
+              <span className="font-mono font-bold text-[#D4AF37] text-sm">#{orderId.slice(-8).toUpperCase()}</span>
+            </div>
           )}
-          <p className="text-gray-600 dark:text-gray-300 mb-8">
-            Thank you for shopping with MaxyStyles. Your order is confirmed and we&apos;ll be in
-            touch shortly.
+          <p className="text-[#5C524A] dark:text-gray-400 mb-10 leading-relaxed max-w-md mx-auto">
+            Thank you for shopping with <strong className="text-[#1A1A1A] dark:text-white font-semibold">MaxyStyles</strong>.
+            Your order has been placed and confirmed. We&apos;ll be in touch shortly with delivery updates.
           </p>
+          <div className="bg-white dark:bg-[#111] border border-gray-100 dark:border-gray-800 rounded-2xl p-6 mb-8 text-left space-y-3">
+            {[
+              'Order confirmation received',
+              'Payment securely processed by Paystack',
+              'Your items are being prepared for dispatch',
+              'Delivery confirmation will be sent to your email',
+            ].map((step) => (
+              <div key={step} className="flex items-center gap-3">
+                <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0" />
+                <span className="text-sm text-[#5C524A] dark:text-gray-400">{step}</span>
+              </div>
+            ))}
+          </div>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Button asChild className="bg-[#D4AF37] hover:bg-[#B8962E] text-black">
-              <Link href="/products">Continue Shopping</Link>
-            </Button>
-            <Button variant="outline" asChild>
-              <Link href="/">Go Home</Link>
-            </Button>
+            <Link
+              href="/products"
+              className="inline-flex items-center justify-center gap-2 bg-[#D4AF37] hover:bg-[#B8962E] text-black font-semibold px-8 py-3.5 text-sm uppercase tracking-widest rounded-xl transition-colors"
+            >
+              <ShoppingBag className="h-4 w-4" />Continue Shopping
+            </Link>
+            <Link
+              href="/"
+              className="inline-flex items-center justify-center gap-2 border border-gray-200 dark:border-gray-700 text-[#1A1A1A] dark:text-white hover:border-[#D4AF37] hover:text-[#D4AF37] font-semibold px-8 py-3.5 text-sm uppercase tracking-widest rounded-xl transition-colors"
+            >
+              <Home className="h-4 w-4" />Go Home
+            </Link>
           </div>
         </div>
       </div>
     );
   }
 
-  // Failed
+  // ── Failed ────────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#0A0A0A] flex items-center justify-center px-4">
-      <div className="text-center max-w-md">
-        <XCircle className="h-20 w-20 text-red-500 mx-auto mb-6" />
-        <h1 className="text-3xl font-bold mb-3 dark:text-white">Payment Failed</h1>
-        <p className="text-gray-600 dark:text-gray-300 mb-2">{errorMsg}</p>
-        <p className="text-gray-500 dark:text-gray-400 text-sm mb-8">
-          If you were charged, please contact us and we will resolve this promptly.
+    <div className="bg-[#FAF8F4] dark:bg-[#0A0A0A] min-h-screen flex items-center justify-center px-6 py-16 text-[#1A1A1A] dark:text-white">
+      <div className="w-full max-w-lg text-center">
+        <div className="relative w-24 h-24 mx-auto mb-8">
+          <div className="absolute inset-0 bg-red-50 dark:bg-red-900/20 rounded-full" />
+          <XCircle className="absolute inset-0 m-auto h-12 w-12 text-red-500" />
+        </div>
+        <div className="flex items-center gap-3 justify-center mb-6">
+          <span className="h-px w-10 bg-red-400" />
+          <span className="text-red-500 text-xs uppercase tracking-[0.3em]">Payment Failed</span>
+          <span className="h-px w-10 bg-red-400" />
+        </div>
+        <h1 className="text-4xl font-bold mb-3 leading-tight">
+          Something went <span className="text-red-500 italic font-normal">wrong.</span>
+        </h1>
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800 rounded-2xl px-6 py-4 mb-8 text-sm text-red-700 dark:text-red-400 text-left leading-relaxed">
+          {errorMsg}
+        </div>
+        <p className="text-[#8C7B6E] dark:text-gray-500 text-sm mb-10 leading-relaxed max-w-md mx-auto">
+          If you believe you were charged, please contact us immediately and we will investigate
+          and resolve the issue as quickly as possible.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <Button asChild>
-            <Link href="/cart">Back to Cart</Link>
-          </Button>
-          <Button variant="outline" asChild>
-            <Link href="/contact">Contact Support</Link>
-          </Button>
+          <Link
+            href="/cart"
+            className="inline-flex items-center justify-center gap-2 bg-[#D4AF37] hover:bg-[#B8962E] text-black font-semibold px-8 py-3.5 text-sm uppercase tracking-widest rounded-xl transition-colors"
+          >
+            <ArrowRight className="h-4 w-4" />Back to Cart
+          </Link>
+          <Link
+            href="/contact"
+            className="inline-flex items-center justify-center gap-2 border border-gray-200 dark:border-gray-700 text-[#1A1A1A] dark:text-white hover:border-[#D4AF37] hover:text-[#D4AF37] font-semibold px-8 py-3.5 text-sm uppercase tracking-widest rounded-xl transition-colors"
+          >
+            <Phone className="h-4 w-4" />Contact Support
+          </Link>
         </div>
       </div>
     </div>
@@ -139,8 +196,11 @@ export default function PaymentVerifyPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-gray-50 dark:bg-[#0A0A0A] flex items-center justify-center">
-          <Loader2 className="h-12 w-12 animate-spin text-[#D4AF37]" />
+        <div className="bg-[#FAF8F4] dark:bg-[#0A0A0A] min-h-screen flex items-center justify-center">
+          <div className="relative w-20 h-20">
+            <div className="absolute inset-0 border-4 border-[#D4AF37]/20 rounded-full" />
+            <div className="absolute inset-0 border-4 border-transparent border-t-[#D4AF37] rounded-full animate-spin" />
+          </div>
         </div>
       }
     >
