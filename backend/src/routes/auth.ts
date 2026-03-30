@@ -7,7 +7,7 @@ import { upload, uploadToCloudinary } from '../utils/cloudinary';
 const router = express.Router();
 
 // ── Fail fast if JWT_SECRET is missing ─────────────────────────────────────────
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET = process.env.JWT_SECRET as string;
 if (!JWT_SECRET) throw new Error('FATAL: JWT_SECRET environment variable is not set. Add it to your .env file.');
 
 // Only expose error details to the developer, never in production
