@@ -6,12 +6,19 @@ import { upload, uploadToCloudinary } from '../utils/cloudinary';
 
 const router = express.Router();
 
+// ── Fail fast if JWT_SECRET is missing ─────────────────────────────────────────
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) throw new Error('FATAL: JWT_SECRET environment variable is not set. Add it to your .env file.');
+
+// Only expose error details to the developer, never in production
+const devErr = (e: any): object => process.env.NODE_ENV === 'development' ? { error: e.message } : {};
+
 // ── Middleware: verify JWT ──────────────────────────────────────────────────────
 function authMiddleware(req: any, res: any, next: any) {
   const token = req.headers.authorization?.replace('Bearer ', '');
   if (!token) return res.status(401).json({ success: false, message: 'No token provided' });
   try {
-    req.user = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key') as any;
+    req.user = jwt.verify(token, JWT_SECRET) as any;
     next();
   } catch {
     res.status(401).json({ success: false, message: 'Invalid token' });
@@ -21,7 +28,8 @@ function authMiddleware(req: any, res: any, next: any) {
 // POST /api/auth/register - Register new user
 router.post('/register', async (req, res) => {
   try {
-    const { name, email, password, role = 'customer' } = req.body;
+    const { name, email, password } = req.body;
+    // role is ALWAYS 'customer' on public registration — never trust client input
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
@@ -32,18 +40,18 @@ router.post('/register', async (req, res) => {
       });
     }
 
-    // Create new user
+    // Create new user — role hardcoded, not from request body
     const user = await User.create({
       name,
       email,
       password,
-      role
+      role: 'customer',
     });
 
     // Generate JWT token
     const token = jwt.sign(
       { userId: user._id, role: user.role },
-      process.env.JWT_SECRET || 'your-secret-key',
+      JWT_SECRET,
       { expiresIn: '7d' }
     );
 
@@ -61,11 +69,7 @@ router.post('/register', async (req, res) => {
       }
     });
   } catch (error: any) {
-    res.status(400).json({
-      success: false,
-      message: 'Registration failed',
-      error: error.message
-    });
+    res.status(400).json({ success: false, message: 'Registration failed', ...devErr(error) });
   }
 });
 
@@ -95,7 +99,7 @@ router.post('/login', async (req, res) => {
     // Generate JWT token
     const token = jwt.sign(
       { userId: user._id, role: user.role },
-      process.env.JWT_SECRET || 'your-secret-key',
+      JWT_SECRET,
       { expiresIn: '7d' }
     );
 
@@ -113,11 +117,7 @@ router.post('/login', async (req, res) => {
       }
     });
   } catch (error: any) {
-    res.status(500).json({
-      success: false,
-      message: 'Login failed',
-      error: error.message
-    });
+    res.status(500).json({ success: false, message: 'Login failed', ...devErr(error) });
   }
 });
 
@@ -133,7 +133,7 @@ router.get('/me', async (req, res) => {
       });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key') as any;
+    const decoded = jwt.verify(token, JWT_SECRET) as any;
     const user = await User.findById(decoded.userId);
 
     if (!user) {
@@ -157,11 +157,7 @@ router.get('/me', async (req, res) => {
       }
     });
   } catch (error: any) {
-    res.status(401).json({
-      success: false,
-      message: 'Invalid token',
-      error: error.message
-    });
+    res.status(401).json({ success: false, message: 'Invalid token' });
   }
 });
 
@@ -189,7 +185,7 @@ router.put('/profile', authMiddleware, async (req: any, res) => {
       }
     });
   } catch (error: any) {
-    res.status(400).json({ success: false, message: 'Failed to update profile', error: error.message });
+    res.status(400).json({ success: false, message: 'Failed to update profile', ...devErr(error) });
   }
 });
 
@@ -210,7 +206,7 @@ router.put('/password', authMiddleware, async (req: any, res) => {
     await user.save();
     res.json({ success: true, message: 'Password changed successfully' });
   } catch (error: any) {
-    res.status(400).json({ success: false, message: 'Failed to change password', error: error.message });
+    res.status(400).json({ success: false, message: 'Failed to change password', ...devErr(error) });
   }
 });
 
@@ -230,7 +226,7 @@ router.post('/avatar', authMiddleware, upload.single('avatar'), async (req: any,
 
     res.json({ success: true, message: 'Avatar updated', data: { avatar: url } });
   } catch (error: any) {
-    res.status(500).json({ success: false, message: 'Avatar upload failed', error: error.message });
+    res.status(500).json({ success: false, message: 'Avatar upload failed', ...devErr(error) });
   }
 });
 
@@ -253,14 +249,19 @@ router.post('/forgot-password', async (req, res) => {
     user.resetPasswordExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
     await user.save({ validateBeforeSave: false });
 
-    // In production you would email rawToken. For now return it in response.
-    res.json({
+    // In production: email rawToken to the user. Never expose it in the response.
+    const responseBody: any = {
       success: true,
-      message: 'Reset token generated. Copy the token below and use it on the reset page.',
-      resetToken: rawToken, // dev-only — remove when email service is integrated
-    });
+      message: 'If that email is registered, a password reset link has been sent.',
+    };
+    if (process.env.NODE_ENV === 'development') {
+      // Dev-only convenience: return the token directly so you can test without email
+      responseBody.resetToken = rawToken;
+      responseBody._devNote = 'resetToken is only returned in development mode';
+    }
+    res.json(responseBody);
   } catch (error: any) {
-    res.status(500).json({ success: false, message: 'Forgot password failed', error: error.message });
+    res.status(500).json({ success: false, message: 'Forgot password failed', ...devErr(error) });
   }
 });
 
@@ -292,7 +293,7 @@ router.post('/reset-password', async (req, res) => {
 
     res.json({ success: true, message: 'Password has been reset successfully. You can now log in.' });
   } catch (error: any) {
-    res.status(500).json({ success: false, message: 'Password reset failed', error: error.message });
+    res.status(500).json({ success: false, message: 'Password reset failed', ...devErr(error) });
   }
 });
 

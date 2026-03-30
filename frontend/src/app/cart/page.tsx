@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Minus, Plus, Trash2, ShoppingBag, ArrowLeft, Tag, X, ArrowRight } from 'lucide-react';
@@ -8,11 +8,9 @@ import { useCart } from '@/context/CartContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-const PROMO_CODES: Record<string, number> = {
-  MAXY10: 0.1,
-  STYLE20: 0.2,
-  FASHION15: 0.15,
-};
+const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+
+interface LivePromo { code: string; discount: number; active: boolean }
 
 export default function CartPage() {
   const { items, removeFromCart, updateQuantity, clearCart, cartTotal } = useCart();
@@ -21,23 +19,34 @@ export default function CartPage() {
   const [promoCode, setPromoCode] = useState('');
   const [appliedPromo, setAppliedPromo] = useState<{ code: string; discount: number } | null>(null);
   const [promoError, setPromoError] = useState('');
+  const [livePromoCodes, setLivePromoCodes] = useState<LivePromo[]>([]);
+  const [taxRate, setTaxRate] = useState(0.075);
 
-  // Shipping: free over ₦50,000
-  const shipping = cartTotal > 50000 ? 0 : cartTotal === 0 ? 0 : 2500;
+  useEffect(() => {
+    fetch(`${API}/admin/settings`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.taxRate !== undefined) setTaxRate(d.taxRate);
+        if (Array.isArray(d.promoCodes)) setLivePromoCodes(d.promoCodes);
+      })
+      .catch(() => {});
+  }, []);
+
+  // Shipping calculated at checkout based on delivery state
   const discountAmount = appliedPromo ? cartTotal * appliedPromo.discount : 0;
-  const tax = (cartTotal - discountAmount) * 0.075;
-  const orderTotal = cartTotal - discountAmount + shipping + tax;
+  const tax = (cartTotal - discountAmount) * taxRate;
+  const orderTotal = cartTotal - discountAmount + tax;
 
   const handleApplyPromo = () => {
     const code = promoCode.trim().toUpperCase();
     if (!code) return;
-    const discount = PROMO_CODES[code];
-    if (discount) {
-      setAppliedPromo({ code, discount });
+    const found = livePromoCodes.find((p) => p.code === code && p.active);
+    if (found) {
+      setAppliedPromo({ code: found.code, discount: found.discount });
       setPromoError('');
     } else {
       setAppliedPromo(null);
-      setPromoError('Invalid promo code. Try MAXY10, STYLE20, or FASHION15.');
+      setPromoError('Invalid or inactive promo code.');
     }
   };
 
@@ -190,36 +199,25 @@ export default function CartPage() {
                   )}
                   <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
                     <span>Shipping</span>
-                    <span>{shipping === 0 ? <span className="text-green-600 font-medium">Free</span> : `₦${shipping.toLocaleString()}`}</span>
+                    <span className="italic text-gray-400 dark:text-gray-600">Calculated at checkout</span>
                   </div>
                   <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
                     <span>Tax (7.5%)</span><span>₦{tax.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                   </div>
-                  {shipping > 0 && (
-                    <p className="text-xs text-blue-600 bg-blue-50 dark:bg-blue-900/20 px-3 py-2 rounded-xl">
-                      Add ₦{(50000 - cartTotal).toLocaleString()} more for free shipping!
-                    </p>
-                  )}
                   <div className="flex justify-between font-bold text-lg border-t border-gray-100 dark:border-gray-800 pt-3 text-gray-900 dark:text-white">
-                    <span>Total</span><span>₦{orderTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                    <span>Estimated Total</span><span>₦{orderTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                   </div>
+                  <p className="text-[10px] text-gray-400 dark:text-gray-600 text-right">+ shipping fee (added at checkout)</p>
                   <Button className="w-full mt-2 bg-[#D4AF37] hover:bg-[#B8962E] text-black font-semibold flex items-center justify-center gap-2" size="lg" onClick={handleCheckout}>
                     Proceed to Checkout
                     <ArrowRight className="h-4 w-4" />
                   </Button>
                   <p className="text-xs text-gray-400 text-center">
-                    Secure checkout &bull; Free returns within 30 days
+                    Secure checkout &bull; Delivery fee calculated from your state
                   </p>
                 </CardContent>
               </Card>
 
-              <Card className="bg-[#FAF8F4] dark:bg-[#111] border-dashed border-gray-200 dark:border-gray-800">
-                <CardContent className="py-4 text-center">
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Free shipping on orders over <span className="font-semibold text-gray-700 dark:text-gray-300">$150</span>
-                  </p>
-                </CardContent>
-              </Card>
             </div>
           </div>
         )}

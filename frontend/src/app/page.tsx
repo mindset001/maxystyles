@@ -1,6 +1,24 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Scissors, ArrowRight, Award, Users, Palette, Quote } from "lucide-react";
 import { FadeUp, SlideLeft, SlideRight, Stagger, StaggerChild, ScaleIn } from "@/components/animations";
+
+// Free Unsplash photos (Unsplash License — free for commercial use)
+// All feature Nigerian / African men in various styles
+const IMG = {
+  // Hero: Nigerian man in blue Yoruba Agbada, elegant studio shot (Pexels free)
+  heroModel:  'https://images.pexels.com/photos/8526759/pexels-photo-8526759.jpeg?auto=compress&cs=tinysrgb&w=800',
+  // About: Elegant portrait of Nigerian man in traditional Agbada, dark background (Pexels free)
+  aboutModel: 'https://images.pexels.com/photos/30452330/pexels-photo-30452330.jpeg?auto=compress&cs=tinysrgb&w=800',
+  // Strip A: traditional attire — striped cap + embroidered fabric (FCT, Nigeria)
+  stripA:     'https://images.unsplash.com/photo-1763823132558-cbff67da4beb?q=80&w=600&auto=format&fit=crop',
+  // Strip B: Nigerian print shirt + cap, casual elegance (Ogun State)
+  stripB:     'https://images.unsplash.com/photo-1579710754366-bb9665344096?q=80&w=600&auto=format&fit=crop',
+  // Strip C: Nigerian man in blue Agbada with sunglasses, regal elegance (Pexels free)
+  stripC:     'https://images.pexels.com/photos/34417803/pexels-photo-34417803.jpeg?auto=compress&cs=tinysrgb&w=600',
+  // Strip D: close-up of hands sewing / embroidery craft
+  stripD:     'https://images.unsplash.com/photo-1612353323719-a6a63b2e35d3?q=80&w=600&auto=format&fit=crop',
+};
 
 // Server-side internal URL — no CORS needed
 const BACKEND = 'http://localhost:5000/api';
@@ -83,7 +101,8 @@ export default async function Home() {
         </div>
 
         <div className="container mx-auto px-6 lg:px-16 relative z-10">
-          <div className="max-w-5xl">
+          <div className="grid lg:grid-cols-[1fr_380px] xl:grid-cols-[1fr_430px] gap-12 xl:gap-20 items-center">
+          <div>
             {/* Eyebrow */}
             <FadeUp delay={0.1}>
               <div className="flex items-center gap-3 mb-10">
@@ -132,6 +151,29 @@ export default async function Home() {
               </Link>
             </div>
             </FadeUp>
+          </div>
+
+          {/* Hero image — desktop only */}
+          <SlideRight className="hidden lg:block relative">
+            <div className="relative h-[580px] xl:h-[660px] overflow-hidden border border-[#D4AF37]/30 shadow-md dark:shadow-none">
+              <Image
+                src={IMG.heroModel}
+                alt="Nigerian man in traditional Agbada attire — Maxy Styles tailoring"
+                fill
+                className="object-cover object-top"
+                priority
+              />
+              {/* Subtle gold tint overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
+              {/* Corner accents */}
+              <span className="absolute top-3 left-3 w-8 h-8 border-t border-l border-[#D4AF37]/70" />
+              <span className="absolute top-3 right-3 w-8 h-8 border-t border-r border-[#D4AF37]/70" />
+              <span className="absolute bottom-3 left-3 w-8 h-8 border-b border-l border-[#D4AF37]/70" />
+              <span className="absolute bottom-3 right-3 w-8 h-8 border-b border-r border-[#D4AF37]/70" />
+            </div>
+            {/* Offset accent box */}
+            <div className="absolute -bottom-4 -right-4 w-full h-full border border-[#D4AF37]/15 -z-[1]" />
+          </SlideRight>
           </div>
         </div>
 
@@ -193,10 +235,15 @@ export default async function Home() {
                 <span className="absolute top-4 right-4 w-8 h-8 border-t border-r border-[#D4AF37]/60" />
                 <span className="absolute bottom-4 left-4 w-8 h-8 border-b border-l border-[#D4AF37]/60" />
                 <span className="absolute bottom-4 right-4 w-8 h-8 border-b border-r border-[#D4AF37]/60" />
-                {/* Inner content */}
-                <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 opacity-30 dark:opacity-20">
-                  <Scissors className="h-20 w-20 text-[#D4AF37]" />
-                </div>
+                {/* Photo fills the panel */}
+                <Image
+                  src={IMG.aboutModel}
+                  alt="Man in a flowing Agbada robe — MaxyStyles bespoke craftsmanship"
+                  fill
+                  className="object-cover object-top"
+                />
+                {/* Light overlay so the gold motto text remains legible */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent" />
                 <div className="absolute bottom-8 left-8 right-8">
                   <div className="h-px w-full bg-[#D4AF37]/30 mb-4" />
                   <p className="text-[#D4AF37] italic text-lg opacity-60">&ldquo;{content.motto}&rdquo;</p>
@@ -246,6 +293,34 @@ export default async function Home() {
               );
             })}
           </Stagger>
+        </div>
+      </section>
+
+      {/* ── PHOTO STRIP ───────────────────────────────────────────────── */}
+      <section className="overflow-hidden bg-[#0A0A0A]">
+        <div className="grid grid-cols-2 md:grid-cols-4">
+          {[
+            { src: IMG.stripA, alt: 'Traditional Nigerian attire — embroidered cap and patterned fabric', pos: 'object-center', label: 'Traditional' },
+            { src: IMG.stripB, alt: 'Nigerian print shirt and cap — casual elegance', pos: 'object-center', label: 'Casual / Print' },
+            { src: IMG.stripC, alt: 'Nigerian man in regal Agbada — traditional tailoring by MaxyStyles', pos: 'object-top', label: 'Agbada' },
+            { src: IMG.stripD, alt: 'Embroidery and sewing craft detail — handmade garment work', pos: 'object-center', label: 'Embroidery' },
+          ].map(({ src, alt, pos, label }, i) => (
+            <div key={i} className="relative h-64 md:h-80 group overflow-hidden">
+              <Image
+                src={src}
+                alt={alt}
+                fill
+                className={`object-cover ${pos} transition-transform duration-700 group-hover:scale-105`}
+              />
+              <div className="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-colors duration-500" />
+              {/* Style label */}
+              <div className="absolute bottom-4 left-4">
+                <span className="text-[10px] uppercase tracking-[0.25em] text-white/80 bg-black/40 backdrop-blur-sm px-3 py-1 border-l-2 border-[#D4AF37]">
+                  {label}
+                </span>
+              </div>
+            </div>
+          ))}
         </div>
       </section>
 

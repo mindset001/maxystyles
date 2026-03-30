@@ -28,20 +28,17 @@ function PaymentVerifyInner() {
     }
 
     const stored = sessionStorage.getItem('maxy-pending-order');
-    if (!stored) {
-      setErrorMsg(`Order details not found. Please contact us and quote your reference: ${reference}`);
-      setStatus('failed');
-      return;
-    }
+    let orderPayload: Record<string, unknown> | null = null;
 
-    let orderPayload: Record<string, unknown>;
-    try {
-      orderPayload = JSON.parse(stored);
-    } catch {
-      setErrorMsg('Order data is corrupted. Please contact support.');
-      setStatus('failed');
-      return;
+    if (stored) {
+      try {
+        orderPayload = JSON.parse(stored);
+      } catch {
+        // corrupted — still proceed, backend will use Paystack metadata
+      }
     }
+    // If no stored order (e.g. admin-generated payment link), orderPayload stays
+    // null and the backend will build the order from Paystack transaction metadata.
 
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
     if (token) headers['Authorization'] = `Bearer ${token}`;

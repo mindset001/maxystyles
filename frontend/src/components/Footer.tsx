@@ -8,6 +8,7 @@ const NAV_LINKS = [
   { href: '/portfolio', label: 'Portfolio' },
   { href: '/products', label: 'Products' },
   { href: '/contact', label: 'Contact' },
+  { href: '/returns', label: 'Returns Policy' },
 ];
 
 export default function Footer() {

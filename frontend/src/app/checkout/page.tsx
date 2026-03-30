@@ -21,13 +21,11 @@ import {
   CreditCard,
 } from 'lucide-react';
 
+import { getShippingFee, NIGERIAN_STATES, SHIPPING_RATES } from '@/lib/shippingRates';
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
-const PROMO_CODES: Record<string, number> = {
-  MAXY10: 0.1,
-  STYLE20: 0.2,
-  FASHION15: 0.15,
-};
+interface LivePromo { code: string; discount: number; active: boolean }
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface CheckoutForm {
@@ -53,6 +51,11 @@ const EMPTY_FORM: CheckoutForm = {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const inputCls = (err?: string) =>
   `w-full bg-transparent border rounded-xl px-4 py-3 text-sm text-[#1A1A1A] dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-600 focus:ring-2 focus:ring-[#D4AF37]/50 focus:border-[#D4AF37] outline-none transition-colors ${
+    err ? 'border-red-400 dark:border-red-500' : 'border-gray-200 dark:border-gray-700'
+  }`;
+
+const selectCls = (err?: string) =>
+  `w-full bg-[#FAF8F4] dark:bg-[#111] border rounded-xl px-4 py-3 text-sm text-[#1A1A1A] dark:text-white focus:ring-2 focus:ring-[#D4AF37]/50 focus:border-[#D4AF37] outline-none transition-colors ${
     err ? 'border-red-400 dark:border-red-500' : 'border-gray-200 dark:border-gray-700'
   }`;
 
@@ -98,10 +101,10 @@ function StepIndicator({ step }: { step: 1 | 2 }) {
 
 // ─── Order Summary Sidebar ────────────────────────────────────────────────────
 function OrderSummary({
-  cartTotal, discountAmount, shipping, tax, orderTotal,
+  cartTotal, discountAmount, shipping, tax, orderTotal, shippingReady,
   appliedPromo, promoCode, promoError, onPromoChange, onApplyPromo, onRemovePromo,
 }: {
-  cartTotal: number; discountAmount: number; shipping: number; tax: number; orderTotal: number;
+  cartTotal: number; discountAmount: number; shipping: number; tax: number; orderTotal: number; shippingReady?: boolean;
   appliedPromo: { code: string; discount: number } | null;
   promoCode: string; promoError: string;
   onPromoChange: (v: string) => void;
@@ -199,8 +202,8 @@ function OrderSummary({
           <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
             <span>Shipping</span>
             <span>
-              {shipping === 0
-                ? <span className="text-green-600 font-medium">Free</span>
+              {!shippingReady
+                ? <span className="text-gray-400 dark:text-gray-600 italic">Select state</span>
                 : `₦${shipping.toLocaleString()}`}
             </span>
           </div>
@@ -246,6 +249,24 @@ export default function CheckoutPage() {
   const [promoError, setPromoError] = useState('');
   const [isPlacing, setIsPlacing] = useState(false);
   const [orderError, setOrderError] = useState('');
+  const [liveRates, setLiveRates] = useState<Record<string, number>>(SHIPPING_RATES);
+  const [livePromoCodes, setLivePromoCodes] = useState<LivePromo[]>([]);
+  const [taxRate, setTaxRate] = useState(0.075);
+
+  // Fetch live delivery rates and site settings
+  useEffect(() => {
+    fetch(`${API_URL}/admin/shipping-rates`)
+      .then((r) => r.json())
+      .then((data) => { if (data.rates) setLiveRates(data.rates); })
+      .catch(() => { /* keep static fallback */ });
+    fetch(`${API_URL}/admin/settings`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.taxRate !== undefined) setTaxRate(d.taxRate);
+        if (Array.isArray(d.promoCodes)) setLivePromoCodes(d.promoCodes);
+      })
+      .catch(() => {});
+  }, []);
 
   // Pre-fill from user if authenticated
   useEffect(() => {
@@ -269,21 +290,23 @@ export default function CheckoutPage() {
     if (items.length === 0) router.replace('/cart');
   }, [items.length, router]);
 
-  const shipping = cartTotal > 50000 ? 0 : cartTotal === 0 ? 0 : 2500;
+  const shipping = form.state
+    ? (liveRates[form.state] ?? getShippingFee(form.state))
+    : 0;
   const discountAmount = appliedPromo ? cartTotal * appliedPromo.discount : 0;
-  const tax = (cartTotal - discountAmount) * 0.075;
+  const tax = (cartTotal - discountAmount) * taxRate;
   const orderTotal = cartTotal - discountAmount + shipping + tax;
 
   const handleApplyPromo = () => {
     const code = promoCode.trim().toUpperCase();
     if (!code) return;
-    const discount = PROMO_CODES[code];
-    if (discount) {
-      setAppliedPromo({ code, discount });
+    const found = livePromoCodes.find((p) => p.code === code && p.active);
+    if (found) {
+      setAppliedPromo({ code: found.code, discount: found.discount });
       setPromoError('');
     } else {
       setAppliedPromo(null);
-      setPromoError('Invalid promo code.');
+      setPromoError('Invalid or inactive promo code.');
     }
   };
 
@@ -298,6 +321,7 @@ export default function CheckoutPage() {
     if (!form.email.trim() || !/\S+@\S+\.\S+/.test(form.email)) errs.email = 'Valid email is required';
     if (!form.street.trim()) errs.street = 'Street address is required';
     if (!form.city.trim()) errs.city = 'City is required';
+    if (!form.state.trim()) errs.state = 'Please select your state for delivery';
     if (!form.country.trim()) errs.country = 'Country is required';
     setFormErrors(errs);
     return Object.keys(errs).length === 0;
@@ -448,7 +472,27 @@ export default function CheckoutPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <Field name="street" label="Street Address *" placeholder="12 Fashion Road" className="sm:col-span-2" />
                     <Field name="city" label="City *" placeholder="Lagos" />
-                    <Field name="state" label="State / Province" placeholder="Lagos State" />
+                    <div>
+                      <label className="block text-xs font-semibold uppercase tracking-widest text-[#1A1A1A] dark:text-white mb-2">
+                        State *
+                      </label>
+                      <select
+                        value={form.state}
+                        onChange={(e) => setField('state', e.target.value)}
+                        className={selectCls(formErrors.state)}
+                      >
+                        <option value="">Select your state</option>
+                        {NIGERIAN_STATES.map((s) => (
+                          <option key={s} value={s}>{s}</option>
+                        ))}
+                      </select>
+                      {formErrors.state && <p className="text-xs text-red-500 mt-1">{formErrors.state}</p>}
+                      {form.state && (
+                        <p className="text-xs text-[#D4AF37] mt-1.5">
+                          Delivery fee to {form.state}: <strong>₦{(liveRates[form.state] ?? getShippingFee(form.state)).toLocaleString()}</strong>
+                        </p>
+                      )}
+                    </div>
                     <Field name="zipCode" label="ZIP / Postal Code" placeholder="100001" />
                     <Field name="country" label="Country *" placeholder="Nigeria" />
                   </div>
@@ -632,6 +676,7 @@ export default function CheckoutPage() {
             cartTotal={cartTotal}
             discountAmount={discountAmount}
             shipping={shipping}
+            shippingReady={!!form.state}
             tax={tax}
             orderTotal={orderTotal}
             appliedPromo={appliedPromo}

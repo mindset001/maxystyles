@@ -12,8 +12,8 @@ export interface IOrder extends Document {
     product?: mongoose.Types.ObjectId;
     productName?: string;
     quantity: number;
-    size: string;
-    color: string;
+    size?: string;
+    color?: string;
     price: number;
   }>;
   totalAmount: number;
@@ -22,7 +22,7 @@ export interface IOrder extends Document {
     street: string;
     city: string;
     state: string;
-    zipCode: string;
+    zipCode?: string;
     country: string;
   };
   paymentStatus: 'pending' | 'completed' | 'failed';
@@ -60,11 +60,11 @@ const OrderSchema = new Schema<IOrder>({
     },
     size: {
       type: String,
-      required: true
+      required: false
     },
     color: {
       type: String,
-      required: true
+      required: false
     },
     price: {
       type: Number,
@@ -86,7 +86,7 @@ const OrderSchema = new Schema<IOrder>({
     street: { type: String, required: true },
     city: { type: String, required: true },
     state: { type: String, required: true },
-    zipCode: { type: String, required: true },
+    zipCode: { type: String, required: false },
     country: { type: String, required: true }
   },
   paymentStatus: {

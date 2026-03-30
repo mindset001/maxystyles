@@ -15,6 +15,16 @@ import { createChatRouter } from './routes/chat';
 // Load environment variables — explicit path so it works regardless of cwd
 dotenv.config({ path: path.join(__dirname, '../.env') });
 
+// Guard: reject server startup in production if critical secrets are missing
+if (process.env.NODE_ENV === 'production') {
+  const required = ['JWT_SECRET', 'MONGODB_URI', 'PAYSTACK_SECRET_KEY'];
+  const missing = required.filter(k => !process.env[k]);
+  if (missing.length) {
+    console.error(`FATAL: Missing required environment variables: ${missing.join(', ')}`);
+    process.exit(1);
+  }
+}
+
 // Import routes
 import productRoutes from './routes/products';
 import userRoutes from './routes/users';
@@ -49,7 +59,7 @@ io.on('connection', (socket) => {
   // Customer or admin joins a specific chat room
   socket.on('join-chat', ({ chatId, token }: { chatId: string; token: string }) => {
     try {
-      jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+      jwt.verify(token, process.env.JWT_SECRET!);
       socket.join(`chat:${chatId}`);
     } catch {
       socket.emit('error', { message: 'Invalid token' });
@@ -59,7 +69,7 @@ io.on('connection', (socket) => {
   // Admin joins the admin-room to receive all chat notifications
   socket.on('join-admin', ({ token }: { token: string }) => {
     try {
-      const decoded: any = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+      const decoded: any = jwt.verify(token, process.env.JWT_SECRET!);
       if (decoded.role === 'admin') {
         socket.join('admin-room');
       }
@@ -138,6 +148,7 @@ const connectDB = async () => {
 // Import admin routes
 import adminRoutes from './routes/admin';
 import paymentRoutes from './routes/payments';
+import analyticsRoutes from './routes/analytics';
 
 // Routes
 app.use('/api/auth', authLimiter, authRoutes);
@@ -148,6 +159,7 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/grades', gradeRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 // Public media / gallery endpoint — no auth required
 app.get('/api/media', async (req, res) => {

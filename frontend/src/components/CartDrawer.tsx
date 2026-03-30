@@ -24,8 +24,7 @@ export default function CartDrawer() {
     return () => { document.body.style.overflow = ''; };
   }, [isOpen]);
 
-  const shipping = cartTotal > 150 ? 0 : 15;
-  const orderTotal = cartTotal + shipping;
+  // Shipping is location-based and calculated at checkout
 
   return (
     <>
@@ -137,7 +136,7 @@ export default function CartDrawer() {
                       {/* Price + remove */}
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-semibold text-gray-900 dark:text-white">
-                          ${(item.price * item.quantity).toFixed(2)}
+                          ₦{(item.price * item.quantity).toLocaleString()}
                         </span>
                         <button
                           onClick={() =>
@@ -160,29 +159,13 @@ export default function CartDrawer() {
         {/* Footer summary */}
         {items.length > 0 && (
           <div className="border-t border-gray-100 dark:border-gray-800 px-6 py-4 space-y-3 bg-gray-50 dark:bg-[#0D0D0D]">
-            <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
+            <div className="flex justify-between font-semibold text-base text-gray-900 dark:text-white">
               <span>Subtotal</span>
-              <span>${cartTotal.toFixed(2)}</span>
+              <span>₦{cartTotal.toLocaleString()}</span>
             </div>
-            <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
-              <span>Shipping</span>
-              <span>
-                {shipping === 0 ? (
-                  <span className="text-green-600 font-medium">Free</span>
-                ) : (
-                  `$${shipping.toFixed(2)}`
-                )}
-              </span>
-            </div>
-            {shipping > 0 && (
-              <p className="text-xs text-gray-400 dark:text-gray-600">
-                Free shipping on orders over $150
-              </p>
-            )}
-            <div className="flex justify-between font-semibold text-base border-t border-gray-100 dark:border-gray-800 pt-3 text-gray-900 dark:text-white">
-              <span>Total</span>
-              <span>${orderTotal.toFixed(2)}</span>
-            </div>
+            <p className="text-xs text-gray-400 dark:text-gray-600">
+              Shipping fee calculated from your delivery state at checkout.
+            </p>
 
             <div className="flex flex-col gap-2 pt-1">
               <Button asChild className="w-full" onClick={closeCart}>

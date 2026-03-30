@@ -653,8 +653,8 @@ export default function ProductDetailPage() {
             {/* Trust badges */}
             <div className="grid grid-cols-3 gap-3 mb-8 py-5 border-y border-gray-100 dark:border-gray-800">
               {[
-                { icon: Truck, label: 'Free delivery', sub: 'On orders over ₦50,000' },
-                { icon: RotateCcw, label: 'Easy returns', sub: '30-day return policy' },
+                { icon: Truck, label: 'Nigeria-wide delivery', sub: 'Fee based on your state' },
+                { icon: RotateCcw, label: 'Easy returns', sub: '14-day exchange policy' },
                 { icon: Shield, label: 'Secure checkout', sub: 'Encrypted payments' },
               ].map(({ icon: Icon, label, sub }) => (
                 <div key={label} className="flex flex-col items-center text-center gap-1.5">
@@ -690,8 +690,12 @@ export default function ProductDetailPage() {
               )}
 
               <Accordion title="Shipping & Returns">
-                <p className="mb-2">We offer free delivery on all orders over ₦50,000 within Nigeria. Standard delivery takes 3–7 business days.</p>
-                <p>Not happy with your purchase? Return any unworn item in its original condition within 30 days for a full refund. Tailored or customised pieces are non-refundable.</p>
+                <p className="mb-2">We deliver to all 36 states + FCT. Delivery fees start from <strong>₦1,500</strong> (Lagos) and vary by state — the exact fee is shown at checkout once you select your delivery state. Standard delivery takes 3–7 business days.</p>
+                <p className="mb-2">Ready-to-wear items may be exchanged or returned for store credit within <strong>14 days</strong> of delivery, provided they are unworn, tags-on, and in original packaging.</p>
+                <p className="mb-2">Custom and bespoke orders are <strong>non-returnable</strong> — made exclusively for you. Defective or incorrect items receive a full replacement at no cost; report within 48 hours of delivery.</p>
+                <p>
+                  <a href="/returns" className="text-[#D4AF37] hover:underline text-sm">View our full Returns &amp; Exchange Policy →</a>
+                </p>
               </Accordion>
 
               <Accordion title="Care Instructions">

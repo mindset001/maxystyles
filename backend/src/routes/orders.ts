@@ -10,7 +10,14 @@ router.get('/', async (req, res) => {
     
     const query: any = {};
     if (status) query.status = status;
-    if (userId) query.user = userId;
+    if (userId) {
+      // Match orders placed by this user ID, OR guest orders with their email
+      const userRecord = await (require('../models').User as any).findById(userId).select('email');
+      const emailFilter = userRecord?.email
+        ? [{ user: userId }, { 'guestInfo.email': userRecord.email }]
+        : [{ user: userId }];
+      query.$or = emailFilter;
+    }
 
     const orders = await Order.find(query)
       .populate('user', 'name email phone')

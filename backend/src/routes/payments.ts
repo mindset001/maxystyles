@@ -1,5 +1,5 @@
 import express from 'express';
-import { Order } from '../models';
+import { Order, User } from '../models';
 
 const router = express.Router();
 
@@ -81,6 +81,42 @@ router.post('/verify', async (req, res) => {
       return res.status(400).json({
         success: false,
         message: data.data?.gateway_response || 'Payment verification failed. Transaction not successful.',
+      });
+    }
+
+    const paystackTx = data.data;
+    const txMeta = paystackTx.metadata || {};
+
+    // ── Custom / admin-generated payment link — build order from Paystack data ──
+    if (!orderPayload || txMeta.customOrder === true) {
+      const amountPaid = paystackTx.amount / 100; // convert from kobo
+      const customerEmail = paystackTx.customer?.email || txMeta.email || 'unknown@unknown.com';
+      const customerName  = txMeta.customerName || paystackTx.customer?.first_name || 'Customer';
+      const description   = txMeta.description  || 'Custom order (admin payment link)';
+
+      // Try to link order to a registered user by email
+      const existingUser = await (User as any).findOne({ email: customerEmail });
+
+      const order = await Order.create({
+        ...(existingUser ? { user: existingUser._id } : { guestInfo: { name: customerName, email: customerEmail, phone: '' } }),
+        products: [{
+          productName: description,
+          quantity: 1,
+          price: amountPaid,
+        }],
+        totalAmount: amountPaid,
+        shippingAddress: { street: 'TBD', city: 'TBD', state: 'TBD', country: 'Nigeria' },
+        paymentMethod: 'paystack',
+        paystackReference: reference,
+        notes: `Admin-generated payment link. Description: ${description}`,
+        status: 'pending',
+        paymentStatus: 'completed',
+      });
+
+      return res.status(201).json({
+        success: true,
+        data: order,
+        message: 'Payment verified successfully',
       });
     }
 

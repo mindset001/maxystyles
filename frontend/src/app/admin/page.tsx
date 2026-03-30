@@ -31,6 +31,8 @@ import {
   Upload,
   Save,
   Search,
+  Link2,
+  Truck,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -40,6 +42,10 @@ import PortfolioManagement from '@/components/admin/PortfolioManagement';
 import ProductsManagement from '@/components/admin/ProductsManagement';
 import CategoriesManagement from '@/components/admin/CategoriesManagement';
 import ChatsManagement from '@/components/admin/ChatsManagement';
+import PaymentLinkGenerator from '@/components/admin/PaymentLinkGenerator';
+import ShippingRatesManagement from '@/components/admin/ShippingRatesManagement';
+import AnalyticsDashboard from '@/components/admin/AnalyticsDashboard';
+import SettingsManagement from '@/components/admin/SettingsManagement';
 
 const sidebarItems = [
   { id: 'dashboard',    label: 'Dashboard',       icon: LayoutDashboard },
@@ -49,6 +55,8 @@ const sidebarItems = [
   { id: 'orders',       label: 'Orders',           icon: ShoppingCart },
   { id: 'customers',    label: 'Customers',        icon: Users },
   { id: 'chats',        label: 'Customer Chats',   icon: MessageCircle },
+  { id: 'payment-links', label: 'Payment Links',   icon: Link2 },
+  { id: 'delivery-rates', label: 'Delivery Rates',  icon: Truck },
   { id: 'content',      label: 'Content Manager',  icon: Edit },
   { id: 'media',        label: 'Media Library',    icon: FileText },
   { id: 'testimonials', label: 'Testimonials',     icon: MessageSquare },
@@ -1224,18 +1232,10 @@ export default function AdminDashboard() {
       case 'orders':       return <OrdersManagement />;
       case 'customers':    return <CustomersManagement />;
       case 'chats':        return <ChatsManagement />;
-      case 'analytics':    return (
-        <div className="flex flex-col items-center justify-center h-64 text-gray-400 gap-2">
-          <TrendingUp className="w-10 h-10 opacity-30" />
-          <p className="text-sm">Analytics coming soon</p>
-        </div>
-      );
-      case 'settings':     return (
-        <div className="flex flex-col items-center justify-center h-64 text-gray-400 gap-2">
-          <Settings className="w-10 h-10 opacity-30" />
-          <p className="text-sm">Settings coming soon</p>
-        </div>
-      );
+      case 'payment-links': return <PaymentLinkGenerator />;
+      case 'delivery-rates': return <ShippingRatesManagement />;
+      case 'analytics':    return <AnalyticsDashboard />;
+      case 'settings':     return <SettingsManagement />;
       default:             return <DashboardOverview />;
     }
   };

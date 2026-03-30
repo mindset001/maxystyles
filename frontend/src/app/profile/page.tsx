@@ -337,7 +337,7 @@ function OrdersTab() {
                     #{order._id.slice(-8).toUpperCase()}
                   </p>
                   <p className="text-sm font-medium text-gray-900 dark:text-white mt-0.5">
-                    {order.products.length} item{order.products.length !== 1 ? 's' : ''} · ${order.totalAmount.toFixed(2)}
+                    {order.products.length} item{order.products.length !== 1 ? 's' : ''} · ₦{order.totalAmount.toLocaleString()}
                   </p>
                   <p className="text-xs text-gray-400 mt-0.5">
                     {new Date(order.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
@@ -362,7 +362,7 @@ function OrdersTab() {
                         <p className="font-medium text-gray-900 dark:text-white">{item.productName ?? 'Item'}</p>
                         <p className="text-xs text-gray-500 dark:text-gray-400">Size: {item.size} · Color: {item.color} · Qty: {item.quantity}</p>
                       </div>
-                      <p className="font-semibold text-gray-900 dark:text-white">${(item.price * item.quantity).toFixed(2)}</p>
+                      <p className="font-semibold text-gray-900 dark:text-white">₦{(item.price * item.quantity).toLocaleString()}</p>
                     </div>
                   ))}
                 </div>

@@ -5,6 +5,8 @@ import { Testimonial } from '../models/Testimonial';
 import { Media } from '../models/Media';
 import { Category } from '../models/Category';
 import { Product } from '../models';
+import { ShippingRate } from '../models/ShippingRate';
+import { SiteSettings } from '../models/SiteSettings';
 import { upload, uploadToCloudinary, deleteFromCloudinary } from '../utils/cloudinary';
 
 const router = express.Router();
@@ -496,6 +498,125 @@ router.delete('/portfolio/bulk-delete', async (req, res) => {
     res.json({ message: `Deleted ${result.deletedCount} portfolio items` });
   } catch (error) {
     res.status(400).json({ message: 'Error bulk deleting portfolio items', error });
+  }
+});
+
+// ─── Shipping Rates ──────────────────────────────────────────────────────────
+
+const DEFAULT_SHIPPING_RATES: Record<string, number> = {
+  // Zone 1 — Lagos
+  'Lagos': 1500,
+  // Zone 2 — South West
+  'Ogun': 2500, 'Oyo': 2500, 'Osun': 2500, 'Ondo': 2500, 'Ekiti': 2500, 'Edo': 2500,
+  // Zone 3 — South East / South South
+  'Delta': 3500, 'Rivers': 3500, 'Anambra': 3500, 'Imo': 3500, 'Abia': 3500,
+  'Enugu': 3500, 'Ebonyi': 3500, 'Cross River': 3500, 'Akwa Ibom': 3500, 'Bayelsa': 3500,
+  // Zone 4 — North Central / FCT
+  'FCT (Abuja)': 4000, 'Kwara': 4000, 'Kogi': 4000, 'Niger': 4000,
+  'Benue': 4000, 'Nasarawa': 4000, 'Plateau': 4000,
+  // Zone 5 — North West
+  'Kano': 5000, 'Kaduna': 5000, 'Zamfara': 5000, 'Sokoto': 5000,
+  'Kebbi': 5000, 'Katsina': 5000, 'Jigawa': 5000,
+  // Zone 6 — North East
+  'Borno': 5500, 'Yobe': 5500, 'Gombe': 5500,
+  'Bauchi': 5500, 'Adamawa': 5500, 'Taraba': 5500,
+};
+
+/** GET /api/admin/shipping-rates — public (used by checkout) */
+router.get('/shipping-rates', async (_req, res) => {
+  try {
+    const doc = await ShippingRate.findOne({ key: 'default' });
+    if (!doc) {
+      return res.json({ rates: DEFAULT_SHIPPING_RATES });
+    }
+    // Convert Map to plain object
+    const rates = Object.fromEntries(doc.rates);
+    res.json({ rates });
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching shipping rates', error });
+  }
+});
+
+/** PUT /api/admin/shipping-rates — admin only */
+router.put('/shipping-rates', async (req, res) => {
+  try {
+    const { rates } = req.body as { rates: Record<string, number> };
+    if (!rates || typeof rates !== 'object') {
+      return res.status(400).json({ message: 'rates object is required' });
+    }
+    // Validate all values are positive numbers
+    for (const [state, fee] of Object.entries(rates)) {
+      if (typeof fee !== 'number' || fee < 0) {
+        return res.status(400).json({ message: `Invalid fee for ${state}: must be a non-negative number` });
+      }
+    }
+    const doc = await ShippingRate.findOneAndUpdate(
+      { key: 'default' },
+      { $set: { rates } },
+      { new: true, upsert: true, setDefaultsOnInsert: true }
+    );
+    res.json({ message: 'Shipping rates updated successfully', rates: Object.fromEntries(doc.rates) });
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating shipping rates', error });
+  }
+});
+
+// ─── Site Settings ───────────────────────────────────────────────────────────
+
+/** GET /api/admin/settings — public (used by cart, checkout, maintenance banner) */
+router.get('/settings', async (_req, res) => {
+  try {
+    let doc = await SiteSettings.findOne({ key: 'default' });
+    if (!doc) {
+      doc = await SiteSettings.create({ key: 'default' });
+    }
+    res.json({
+      taxRate: doc.taxRate,
+      maintenanceMode: doc.maintenanceMode,
+      maintenanceMessage: doc.maintenanceMessage,
+      promoCodes: doc.promoCodes,
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching settings', error });
+  }
+});
+
+/** PUT /api/admin/settings — admin only */
+router.put('/settings', async (req, res) => {
+  try {
+    const { taxRate, maintenanceMode, maintenanceMessage, promoCodes } = req.body;
+
+    const updates: Record<string, unknown> = {};
+    if (taxRate !== undefined) {
+      if (typeof taxRate !== 'number' || taxRate < 0 || taxRate > 1)
+        return res.status(400).json({ message: 'taxRate must be a number between 0 and 1' });
+      updates.taxRate = taxRate;
+    }
+    if (maintenanceMode !== undefined) updates.maintenanceMode = !!maintenanceMode;
+    if (maintenanceMessage !== undefined) updates.maintenanceMessage = String(maintenanceMessage);
+    if (promoCodes !== undefined) {
+      if (!Array.isArray(promoCodes))
+        return res.status(400).json({ message: 'promoCodes must be an array' });
+      for (const p of promoCodes) {
+        if (!p.code || typeof p.discount !== 'number' || p.discount < 0 || p.discount > 1)
+          return res.status(400).json({ message: `Invalid promo code entry: ${JSON.stringify(p)}` });
+      }
+      updates.promoCodes = promoCodes;
+    }
+
+    const doc = await SiteSettings.findOneAndUpdate(
+      { key: 'default' },
+      { $set: updates },
+      { new: true, upsert: true, setDefaultsOnInsert: true }
+    );
+    res.json({
+      taxRate: doc.taxRate,
+      maintenanceMode: doc.maintenanceMode,
+      maintenanceMessage: doc.maintenanceMessage,
+      promoCodes: doc.promoCodes,
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating settings', error });
   }
 });
 

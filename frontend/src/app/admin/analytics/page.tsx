@@ -19,7 +19,7 @@ export default function AnalyticsPage() {
             <CardTitle>Total Revenue</CardTitle>
           </CardHeader>
           <CardContent>
-            <span className="text-2xl font-semibold">$45,230</span>
+            <span className="text-2xl font-semibold">₦45,230,000</span>
           </CardContent>
         </Card>
         <Card>
@@ -54,9 +54,9 @@ export default function AnalyticsPage() {
           </CardHeader>
           <CardContent>
             <ul className="space-y-2">
-              <li className="flex justify-between"><span>Sarah Johnson</span><span>$129.99</span></li>
-              <li className="flex justify-between"><span>Michael Chen</span><span>$89.50</span></li>
-              <li className="flex justify-between"><span>Emily Davis</span><span>$245.00</span></li>
+              <li className="flex justify-between"><span>Sarah Johnson</span><span>₦129,990</span></li>
+              <li className="flex justify-between"><span>Michael Chen</span><span>₦89,500</span></li>
+              <li className="flex justify-between"><span>Emily Davis</span><span>₦245,000</span></li>
             </ul>
           </CardContent>
         </Card>
